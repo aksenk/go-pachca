@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"pachca-tag-manager/internal/logger"
 	"time"
 )
 
@@ -41,7 +40,7 @@ func NewChatBot(client *Client, handler ChatBotHandler, botUserID int, responseT
 func (cb *ChatBot) Handler(w http.ResponseWriter, r *http.Request) {
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
-		logger.Zap.Error(fmt.Sprintf("%v: %v", ErrReadingBody, err))
+		//logger.Zap.Error(fmt.Sprintf("%v: %v", ErrReadingBody, err))
 		http.Error(w, ErrReadingBody.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -50,7 +49,7 @@ func (cb *ChatBot) Handler(w http.ResponseWriter, r *http.Request) {
 	var webhookType *WebhookType
 	err = json.Unmarshal(body, &webhookType)
 	if err != nil {
-		logger.Zap.Error(fmt.Sprintf("%v: %v", ErrWebhookType, err))
+		//logger.Zap.Error(fmt.Sprintf("%v: %v", ErrWebhookType, err))
 		http.Error(w, ErrWebhookType.Error(), http.StatusBadRequest)
 		return
 	}
@@ -61,7 +60,7 @@ func (cb *ChatBot) Handler(w http.ResponseWriter, r *http.Request) {
 		var webhook *WebhookMessage
 		err = json.Unmarshal(body, &webhook)
 		if err != nil {
-			logger.Zap.Error(fmt.Sprintf("%v: %v", ErrWebhookParsing, err))
+			//logger.Zap.Error(fmt.Sprintf("%v: %v", ErrWebhookParsing, err))
 			http.Error(w, ErrWebhookParsing.Error(), http.StatusBadRequest)
 			return
 		}
@@ -73,7 +72,7 @@ func (cb *ChatBot) Handler(w http.ResponseWriter, r *http.Request) {
 
 		// проверяем что текст сообщения не пустой
 		if webhook.Content == "" {
-			logger.Zap.Warn("Empty message content")
+			//logger.Zap.Warn("Empty message content")
 			http.Error(w, ErrWebhookParsing.Error(), http.StatusBadRequest)
 			return
 		}
@@ -85,23 +84,23 @@ func (cb *ChatBot) Handler(w http.ResponseWriter, r *http.Request) {
 		// отдаём в асинхронную обработку вебхук, а клиенту возвращаем ОК
 		go func(ctx context.Context, webhook *WebhookMessage) {
 			err := cb.handler.MessageHandler(ctx, webhook)
-			if err != nil {
-				logger.Zap.Error(fmt.Sprintf("error processing received message: %v", err))
-			}
+			//if err != nil {
+			//	logger.Zap.Error(fmt.Sprintf("error processing received message: %v", err))
+			//}
 		}(requestCtx, webhook)
 
 	case "button":
 		var webhook *WebhookButton
 		err = json.Unmarshal(body, &webhook)
 		if err != nil {
-			logger.Zap.Error(fmt.Sprintf("%v: %v", ErrWebhookParsing, err))
+			//logger.Zap.Error(fmt.Sprintf("%v: %v", ErrWebhookParsing, err))
 			http.Error(w, ErrWebhookParsing.Error(), http.StatusBadRequest)
 			return
 		}
 
 		// проверяем что в кнопке есть данные
 		if webhook.Data == "" {
-			logger.Zap.Warn("Empty message content")
+			//logger.Zap.Warn("Empty message content")
 			http.Error(w, ErrWebhookParsing.Error(), http.StatusBadRequest)
 			return
 		}
@@ -113,13 +112,13 @@ func (cb *ChatBot) Handler(w http.ResponseWriter, r *http.Request) {
 		// отдаём в асинхронную обработку вебхук, а клиенту возвращаем ОК
 		go func(ctx context.Context, webhook *WebhookButton) {
 			err := cb.handler.ButtonHandler(ctx, webhook)
-			if err != nil {
-				logger.Zap.Error(fmt.Sprintf("error processing received message: %v", err))
-			}
+			//if err != nil {
+			//	logger.Zap.Error(fmt.Sprintf("error processing received message: %v", err))
+			//}
 		}(requestCtx, webhook)
 
 	default:
-		logger.Zap.Error("This type of the webhook is not implemented")
+		//logger.Zap.Error("This type of the webhook is not implemented")
 		http.Error(w, "This type of the webhook is not implemented", http.StatusBadRequest)
 	}
 
