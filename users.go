@@ -193,11 +193,18 @@ func (u *Users) Find(ctx context.Context, query string) (users []UserResponse, r
 // Update
 // Метод для редактирования сотрудника.
 // Данный метод доступен для работы только с access_token администратора пространства.
-func (u *Users) Update(ctx context.Context, userID int, user User) (*UserResponse, *resty.Response, error) {
+func (u *Users) Update(ctx context.Context, userID int, user *User) (*UserResponse, *resty.Response, error) {
 	url := fmt.Sprintf("%v/%v", usersURL, userID)
+
+	body := struct {
+		User *User `json:"user"`
+	}{
+		User: user,
+	}
+
 	resp, err := u.client.R().
 		SetContext(ctx).
-		SetBody(user).
+		SetBody(body).
 		Put(url)
 	if err != nil {
 		return nil, resp, err
