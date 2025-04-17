@@ -15,19 +15,23 @@ type Messages struct {
 }
 
 // Message
-// Объект для исходящего сообщения в pachca
+// Объект для сообщения pachca
 type Message struct {
-	Message struct {
-		EntityType         string            `json:"entity_type,omitempty"`
-		EntityID           int               `json:"entity_id,omitempty"`
-		Content            string            `json:"content,omitempty"`
-		Files              []MessageFile     `json:"files,omitempty"`
-		Buttons            [][]MessageButton `json:"buttons,omitempty"`
-		ParentMessageID    *int              `json:"parent_message_id,omitempty"`
-		DisplayAvatarURL   string            `json:"display_avatar_url"`
-		SkipInviteMentions bool              `json:"skip_invite_mentions,omitempty"`
-		LinkPreview        bool              `json:"link_preview,omitempty"`
-	} `json:"message"`
+	EntityType         string            `json:"entity_type,omitempty"`
+	EntityID           int               `json:"entity_id,omitempty"`
+	Content            string            `json:"content,omitempty"`
+	Files              []MessageFile     `json:"files,omitempty"`
+	Buttons            [][]MessageButton `json:"buttons,omitempty"`
+	ParentMessageID    *int              `json:"parent_message_id,omitempty"`
+	DisplayAvatarURL   string            `json:"display_avatar_url"`
+	SkipInviteMentions bool              `json:"skip_invite_mentions,omitempty"`
+	LinkPreview        bool              `json:"link_preview,omitempty"`
+}
+
+// OutgoingMessage
+// Объект для исходящего сообщения в pachca
+type OutgoingMessage struct {
+	Message *Message `json:"message"`
 }
 
 // MessageFile
@@ -93,18 +97,9 @@ type MessageResponse struct {
 }
 
 // TODO переделать на опции
-func (m *Messages) New(content string, entityID int) *Message {
-	msg := &Message{
-		Message: struct {
-			EntityType         string            `json:"entity_type,omitempty"`
-			EntityID           int               `json:"entity_id,omitempty"`
-			Content            string            `json:"content,omitempty"`
-			Files              []MessageFile     `json:"files,omitempty"`
-			Buttons            [][]MessageButton `json:"buttons,omitempty"`
-			ParentMessageID    *int              `json:"parent_message_id,omitempty"`
-			SkipInviteMentions bool              `json:"skip_invite_mentions,omitempty"`
-			LinkPreview        bool              `json:"link_preview,omitempty"`
-		}{
+func (m *Messages) New(content string, entityID int) *OutgoingMessage {
+	msg := &OutgoingMessage{
+		Message: &Message{
 			EntityID: entityID,
 			Content:  content,
 		},
@@ -165,7 +160,7 @@ func (m *Messages) GetAll(ctx context.Context, chatID int) (*MessagesResponseRaw
 	return messages, resp, nil
 }
 
-func (m *Messages) Edit(ctx context.Context, messageID int, newMessage *Message) (*MessageResponseRaw, *resty.Response, error) {
+func (m *Messages) Edit(ctx context.Context, messageID int, newMessage *OutgoingMessage) (*MessageResponseRaw, *resty.Response, error) {
 	if messageID <= 0 {
 		return nil, nil, fmt.Errorf("%v: incorrect message ID %v", ErrInvalidInput, messageID)
 	}
@@ -200,7 +195,7 @@ func (m *Messages) Edit(ctx context.Context, messageID int, newMessage *Message)
 	return r, resp, nil
 }
 
-func (m *Messages) Send(ctx context.Context, msg *Message) (*MessageResponseRaw, *resty.Response, error) {
+func (m *Messages) Send(ctx context.Context, msg *OutgoingMessage) (*MessageResponseRaw, *resty.Response, error) {
 	if msg == nil {
 		return nil, nil, fmt.Errorf("%v: message is nil", ErrInvalidInput)
 	}

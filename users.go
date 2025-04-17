@@ -126,8 +126,10 @@ type ListUsersOptions struct {
 func (u *Users) List(ctx context.Context, options *ListUsersOptions) (users []UserResponse, resp *resty.Response, err error) {
 	if options == nil {
 		options = &ListUsersOptions{
-			page: 1,
-			per:  50,
+			PaginationOptions: PaginationOptions{
+				page: 1,
+				per:  50,
+			},
 		}
 	}
 
@@ -160,8 +162,10 @@ func (u *Users) List(ctx context.Context, options *ListUsersOptions) (users []Us
 // Поисковая фраза для фильтрации результатов (поиск идет по полям first_name (имя), last_name (фамилия), email (электронная почта), phone_number (телефон) и nickname (никнейм))
 func (u *Users) Find(ctx context.Context, query string) (users []UserResponse, resp *resty.Response, err error) {
 	options := &ListUsersOptions{
-		per:   50,
-		page:  1,
+		PaginationOptions: PaginationOptions{
+			per:  50,
+			page: 1,
+		},
 		query: query,
 	}
 
