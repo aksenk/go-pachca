@@ -36,7 +36,7 @@ type User struct {
 	Title            string               `json:"title,omitempty"`
 	Role             string               `json:"role,omitempty"`
 	Suspended        bool                 `json:"suspended,omitempty"`
-	ListTags         []string             `json:"list_tags,omitempty"`
+	ListTags         []string             `json:"list_tags"`
 	CustomProperties []UserCustomProperty `json:"custom_properties,omitempty"`
 }
 
