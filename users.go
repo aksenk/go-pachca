@@ -27,17 +27,17 @@ type UserStatus struct {
 }
 
 type User struct {
-	FirstName        string               `json:"first_name"`
-	LastName         string               `json:"last_name"`
-	Nickname         string               `json:"nickname"`
-	Email            string               `json:"email"`
-	PhoneNumber      string               `json:"phone_number"`
-	Department       string               `json:"department"`
-	Title            string               `json:"title"`
-	Role             string               `json:"role"`
-	Suspended        bool                 `json:"suspended"`
-	ListTags         []string             `json:"list_tags"`
-	CustomProperties []UserCustomProperty `json:"custom_properties"`
+	FirstName        string               `json:"first_name,omitempty"`
+	LastName         string               `json:"last_name,omitempty"`
+	Nickname         string               `json:"nickname,omitempty"`
+	Email            string               `json:"email,omitempty"`
+	PhoneNumber      string               `json:"phone_number,omitempty"`
+	Department       string               `json:"department,omitempty"`
+	Title            string               `json:"title,omitempty"`
+	Role             string               `json:"role,omitempty"`
+	Suspended        bool                 `json:"suspended,omitempty"`
+	ListTags         []string             `json:"list_tags,omitempty"`
+	CustomProperties []UserCustomProperty `json:"custom_properties,omitempty"`
 }
 
 type UserResponse struct {
