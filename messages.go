@@ -149,7 +149,7 @@ func (m *Messages) GetAll(ctx context.Context, chatID int) ([]MessageResponse, *
 	return messages.Data, resp, nil
 }
 
-func (m *Messages) Edit(ctx context.Context, messageID int, newMessage *Message) (*MessageResponseRaw, *resty.Response, error) {
+func (m *Messages) Edit(ctx context.Context, messageID int, newMessage *Message) (*MessageResponse, *resty.Response, error) {
 	if messageID <= 0 {
 		return nil, nil, fmt.Errorf("%v: incorrect message ID %v", ErrInvalidInput, messageID)
 	}
@@ -185,7 +185,7 @@ func (m *Messages) Edit(ctx context.Context, messageID int, newMessage *Message)
 		return nil, resp, fmt.Errorf("%v: %v", ErrResponseDecode, err)
 	}
 
-	return r, resp, nil
+	return &r.Data, resp, nil
 }
 
 func (m *Messages) Send(ctx context.Context, msg *OutgoingMessage) (*MessageResponse, *resty.Response, error) {
