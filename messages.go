@@ -96,18 +96,7 @@ type MessageResponse struct {
 	ParentMessageID *int `json:"parent_message_id"`
 }
 
-// TODO переделать на опции
-func (m *Messages) New(content string, entityID int) *OutgoingMessage {
-	msg := &OutgoingMessage{
-		Message: &Message{
-			EntityID: entityID,
-			Content:  content,
-		},
-	}
-	return msg
-}
-
-func (m *Messages) Get(ctx context.Context, messageID int) (*MessageResponseRaw, *resty.Response, error) {
+func (m *Messages) Get(ctx context.Context, messageID int) (*MessageResponse, *resty.Response, error) {
 	if messageID <= 0 {
 		return nil, nil, fmt.Errorf("%w: incorrect message ID %d", ErrInvalidInput, messageID)
 	}
@@ -129,10 +118,10 @@ func (m *Messages) Get(ctx context.Context, messageID int) (*MessageResponseRaw,
 		return nil, resp, fmt.Errorf("%v: %v", ErrResponseDecode, err)
 	}
 
-	return r, resp, nil
+	return &r.Data, resp, nil
 }
 
-func (m *Messages) GetAll(ctx context.Context, chatID int) (*MessagesResponseRaw, *resty.Response, error) {
+func (m *Messages) GetAll(ctx context.Context, chatID int) ([]MessageResponse, *resty.Response, error) {
 	if chatID <= 0 {
 		return nil, nil, fmt.Errorf("%v: incorrect chat ID %d", ErrInvalidInput, chatID)
 	}
@@ -157,27 +146,31 @@ func (m *Messages) GetAll(ctx context.Context, chatID int) (*MessagesResponseRaw
 		return nil, resp, fmt.Errorf("%v: %v", ErrResponseDecode, err)
 	}
 
-	return messages, resp, nil
+	return messages.Data, resp, nil
 }
 
-func (m *Messages) Edit(ctx context.Context, messageID int, newMessage *OutgoingMessage) (*MessageResponseRaw, *resty.Response, error) {
+func (m *Messages) Edit(ctx context.Context, messageID int, newMessage *Message) (*MessageResponseRaw, *resty.Response, error) {
 	if messageID <= 0 {
 		return nil, nil, fmt.Errorf("%v: incorrect message ID %v", ErrInvalidInput, messageID)
 	}
 	if newMessage == nil {
 		return nil, nil, fmt.Errorf("%v: new message is nil", ErrInvalidInput)
 	}
-	if newMessage.Message.EntityID <= 0 {
-		return nil, nil, fmt.Errorf("%v: incorrect entity ID %d", ErrInvalidInput, newMessage.Message.EntityID)
+	if newMessage.EntityID <= 0 {
+		return nil, nil, fmt.Errorf("%v: incorrect entity ID %d", ErrInvalidInput, newMessage.EntityID)
 	}
-	if newMessage.Message.Content == "" {
+	if newMessage.Content == "" {
 		return nil, nil, fmt.Errorf("%v: message content is empty", ErrInvalidInput)
+	}
+
+	body := OutgoingMessage{
+		Message: newMessage,
 	}
 
 	url := fmt.Sprintf("%v/%v", messagesURL, messageID)
 	resp, err := m.client.R().
 		SetContext(ctx).
-		SetBody(newMessage).
+		SetBody(body).
 		Put(url)
 	if err != nil {
 		return nil, resp, err
@@ -195,7 +188,7 @@ func (m *Messages) Edit(ctx context.Context, messageID int, newMessage *Outgoing
 	return r, resp, nil
 }
 
-func (m *Messages) Send(ctx context.Context, msg *OutgoingMessage) (*MessageResponseRaw, *resty.Response, error) {
+func (m *Messages) Send(ctx context.Context, msg *OutgoingMessage) (*MessageResponse, *resty.Response, error) {
 	if msg == nil {
 		return nil, nil, fmt.Errorf("%v: message is nil", ErrInvalidInput)
 	}
@@ -223,7 +216,7 @@ func (m *Messages) Send(ctx context.Context, msg *OutgoingMessage) (*MessageResp
 		return nil, resp, fmt.Errorf("%w: %w", ErrResponseDecode, err)
 	}
 
-	return &r, resp, nil
+	return &r.Data, resp, nil
 }
 
 func (m *Messages) Delete(ctx context.Context, messageID int) (*resty.Response, error) {
