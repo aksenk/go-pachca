@@ -239,7 +239,7 @@ func (m *Messages) Delete(ctx context.Context, messageID int) (*resty.Response, 
 		return resp, err
 	}
 
-	if resp.StatusCode() != 200 {
+	if resp.StatusCode() != 204 {
 		return resp, fmt.Errorf("%w: %v", ErrResponseCode, resp.StatusCode())
 	}
 
