@@ -225,3 +225,23 @@ func (m *Messages) Send(ctx context.Context, msg *OutgoingMessage) (*MessageResp
 
 	return &r, resp, nil
 }
+
+func (m *Messages) Delete(ctx context.Context, messageID int) (*resty.Response, error) {
+	if messageID <= 0 {
+		return nil, fmt.Errorf("%w: incorrect message ID %d", ErrInvalidInput, messageID)
+	}
+
+	url := fmt.Sprintf("%v/%v", messagesURL, messageID)
+	resp, err := m.client.R().
+		SetContext(ctx).
+		Delete(url)
+	if err != nil {
+		return resp, err
+	}
+
+	if resp.StatusCode() != 200 {
+		return resp, fmt.Errorf("%w: %v", ErrResponseCode, resp.StatusCode())
+	}
+
+	return resp, nil
+}
