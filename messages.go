@@ -188,19 +188,23 @@ func (m *Messages) Edit(ctx context.Context, messageID int, newMessage *Message)
 	return &r.Data, resp, nil
 }
 
-func (m *Messages) Send(ctx context.Context, msg *OutgoingMessage) (*MessageResponse, *resty.Response, error) {
+func (m *Messages) Send(ctx context.Context, msg *Message) (*MessageResponse, *resty.Response, error) {
 	if msg == nil {
 		return nil, nil, fmt.Errorf("%v: message is nil", ErrInvalidInput)
 	}
-	if msg.Message.EntityID <= 0 {
-		return nil, nil, fmt.Errorf("%v: incorrect entity ID %d", ErrInvalidInput, msg.Message.EntityID)
+	if msg.EntityID <= 0 {
+		return nil, nil, fmt.Errorf("%v: incorrect entity ID %d", ErrInvalidInput, msg.EntityID)
 	}
-	if msg.Message.Content == "" {
+	if msg.Content == "" {
 		return nil, nil, fmt.Errorf("%v: message content is empty", ErrInvalidInput)
 	}
 
+	body := OutgoingMessage{
+		Message: msg,
+	}
+
 	resp, err := m.client.R().
-		SetBody(msg).
+		SetBody(body).
 		SetContext(ctx).
 		Post(messagesURL)
 	if err != nil {
