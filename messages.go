@@ -242,3 +242,45 @@ func (m *Messages) Delete(ctx context.Context, messageID int) (*resty.Response, 
 
 	return resp, nil
 }
+
+func (m *Messages) Pin(ctx context.Context, messageID int) (*resty.Response, error) {
+	if messageID <= 0 {
+		return nil, fmt.Errorf("%w: incorrect message ID %d", ErrInvalidInput, messageID)
+	}
+
+	url := fmt.Sprintf("%v/%v/pin", messagesURL, messageID)
+	resp, err := m.client.R().
+		SetContext(ctx).
+		Post(url)
+	if err != nil {
+		return resp, err
+	}
+
+	// 201 при успешном пине сообщения
+	// 409 если сообщение уже было запинено
+	if resp.StatusCode() != 201 || resp.StatusCode() != 409 {
+		return resp, fmt.Errorf("%w: %v", ErrResponseCode, resp.StatusCode())
+	}
+
+	return resp, nil
+}
+
+func (m *Messages) Unpin(ctx context.Context, messageID int) (*resty.Response, error) {
+	if messageID <= 0 {
+		return nil, fmt.Errorf("%w: incorrect message ID %d", ErrInvalidInput, messageID)
+	}
+
+	url := fmt.Sprintf("%v/%v/pin", messagesURL, messageID)
+	resp, err := m.client.R().
+		SetContext(ctx).
+		Delete(url)
+	if err != nil {
+		return resp, err
+	}
+
+	if resp.StatusCode() != 204 {
+		return resp, fmt.Errorf("%w: %v", ErrResponseCode, resp.StatusCode())
+	}
+
+	return resp, nil
+}
