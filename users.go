@@ -147,11 +147,11 @@ func (u *Users) List(ctx context.Context, options *ListUsersOptions) (users []Us
 
 		users = append(users, usersResponse...)
 
-		if len(usersResponse) < options.Per {
+		if len(usersResponse) == options.Per {
+			options.Page++
+		} else {
 			break
 		}
-
-		options.Page++
 	}
 
 	return users, resp, nil
