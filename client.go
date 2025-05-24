@@ -35,8 +35,8 @@ type Client struct {
 }
 
 type PaginationOptions struct {
-	per  int
-	page int
+	Per  int
+	Page int
 }
 
 // NewClient

@@ -143,17 +143,17 @@ func (t *Tags) Delete(ctx context.Context, tagID int) (*resty.Response, error) {
 // getTagsPaginated
 // Запрос списка тегов с пагинацией
 func (t *Tags) getTagsPaginated(ctx context.Context, options *ListTagsOptions) ([]TagResponse, *resty.Response, error) {
-	if options.page <= 0 {
-		return nil, nil, fmt.Errorf("%w: incorrect page %d", ErrInvalidInput, options.page)
+	if options.Page <= 0 {
+		return nil, nil, fmt.Errorf("%w: incorrect Page %d", ErrInvalidInput, options.Page)
 	}
-	if options.per <= 0 {
-		return nil, nil, fmt.Errorf("%w: incorrect per %d", ErrInvalidInput, &options.per)
+	if options.Per <= 0 {
+		return nil, nil, fmt.Errorf("%w: incorrect Per %d", ErrInvalidInput, &options.Per)
 
 	}
 	resp, err := t.client.R().
 		SetQueryParams(map[string]string{
-			"page": fmt.Sprint(options.page),
-			"per":  fmt.Sprint(options.per),
+			"Page": fmt.Sprint(options.Page),
+			"Per":  fmt.Sprint(options.Per),
 		}).
 		SetContext(ctx).
 		Get(tagsURL)
@@ -207,8 +207,8 @@ func (t *Tags) List(ctx context.Context, options *ListTagsOptions) (allTags []Ta
 	if options == nil {
 		options = &ListTagsOptions{
 			PaginationOptions{
-				page: 1,
-				per:  50,
+				Page: 1,
+				Per:  50,
 			},
 		}
 	}
@@ -226,10 +226,10 @@ func (t *Tags) List(ctx context.Context, options *ListTagsOptions) (allTags []Ta
 
 		allTags = append(allTags, tags...)
 
-		if len(tags) < options.per {
+		if len(tags) < options.Per {
 			break
 		}
-		options.page++
+		options.Page++
 	}
 
 	return allTags, resp, nil
@@ -240,8 +240,8 @@ func (t *Tags) List(ctx context.Context, options *ListTagsOptions) (allTags []Ta
 func (t *Tags) Find(ctx context.Context, name string) (tag *TagResponse, resp *resty.Response, err error) {
 	options := &ListTagsOptions{
 		PaginationOptions{
-			page: 1,
-			per:  50,
+			Page: 1,
+			Per:  50,
 		},
 	}
 
@@ -262,11 +262,11 @@ func (t *Tags) Find(ctx context.Context, name string) (tag *TagResponse, resp *r
 			}
 		}
 
-		if len(tags) < options.per {
+		if len(tags) < options.Per {
 			break
 		}
 
-		options.page++
+		options.Page++
 	}
 
 	return nil, resp, fmt.Errorf("tag with name %s not found", name)
@@ -285,8 +285,8 @@ func (t *Tags) Users(ctx context.Context, tagID int) (allUsers []UserResponse, r
 
 	options := &TagUsersOptions{
 		PaginationOptions{
-			page: 1,
-			per:  50,
+			Page: 1,
+			Per:  50,
 		},
 	}
 
@@ -303,11 +303,11 @@ func (t *Tags) Users(ctx context.Context, tagID int) (allUsers []UserResponse, r
 
 		allUsers = append(allUsers, users...)
 
-		if len(users) < options.per {
+		if len(users) < options.Per {
 			break
 		}
 
-		options.page++
+		options.Page++
 	}
 
 	return allUsers, resp, nil
@@ -321,8 +321,8 @@ func (t *Tags) getTagUsersPaginated(ctx context.Context, tagID int, options *Tag
 	resp, err := t.client.R().
 		SetContext(ctx).
 		SetQueryParams(map[string]string{
-			"page": fmt.Sprint(options.page),
-			"per":  fmt.Sprint(options.per),
+			"Page": fmt.Sprint(options.Page),
+			"Per":  fmt.Sprint(options.Per),
 		}).
 		Get(url)
 	if err != nil {

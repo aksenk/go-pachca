@@ -183,27 +183,27 @@ func (c *Chats) Unarchive(ctx context.Context, chatID int) (*resty.Response, err
 // ListChatsOptions
 // Опции для поиска чатов
 type ListChatsOptions struct {
-	sort                string
-	availability        string
-	lastMessageAtAfter  string
-	lastMessageAtBefore string
+	Sort                string
+	Availability        string
+	LastMessageAtAfter  string
+	LastMessageAtBefore string
 	PaginationOptions
 }
 
 // List
 // Получение списка всех бесед и каналов
 func (c *Chats) List(ctx context.Context, options *ListChatsOptions) (allChats []ChatResponse, resp *resty.Response, err error) {
-	if options.sort != "asc" && options.sort != "desc" {
-		options.sort = "desc"
+	if options.Sort != "asc" && options.Sort != "desc" {
+		options.Sort = "desc"
 	}
-	if options.per <= 0 {
-		options.per = 25
+	if options.Per <= 0 {
+		options.Per = 25
 	}
-	if options.page <= 0 {
-		options.page = 1
+	if options.Page <= 0 {
+		options.Page = 1
 	}
-	if options.availability != "is_member" && options.availability != "public" {
-		options.availability = "is_member"
+	if options.Availability != "is_member" && options.Availability != "public" {
+		options.Availability = "is_member"
 	}
 	// TODO last_message_at_after last_message_at_before
 
@@ -220,11 +220,11 @@ func (c *Chats) List(ctx context.Context, options *ListChatsOptions) (allChats [
 
 		allChats = append(allChats, chats...)
 
-		if len(chats) < options.per {
+		if len(chats) < options.Per {
 			break
 		}
 
-		options.page++
+		options.Page++
 	}
 
 	return allChats, resp, nil
@@ -236,12 +236,12 @@ func (c *Chats) List(ctx context.Context, options *ListChatsOptions) (allChats [
 func (c *Chats) getChatsPaginated(ctx context.Context, options *ListChatsOptions) ([]ChatResponse, *resty.Response, error) {
 	resp, err := c.client.R().
 		SetQueryParams(map[string]string{
-			"page":         fmt.Sprint(options.page),
-			"per":          fmt.Sprint(options.per),
-			"availability": options.availability,
-			"sort":         options.sort,
-			//"last_message_at_after":  options.lastMessageAtAfter,
-			//"last_message_at_before": options.lastMessageAtBefore,
+			"Page":         fmt.Sprint(options.Page),
+			"Per":          fmt.Sprint(options.Per),
+			"Availability": options.Availability,
+			"Sort":         options.Sort,
+			//"last_message_at_after":  options.LastMessageAtAfter,
+			//"last_message_at_before": options.LastMessageAtBefore,
 		}).
 		SetContext(ctx).
 		Get(chatsURL)
@@ -265,10 +265,10 @@ func (c *Chats) getChatsPaginated(ctx context.Context, options *ListChatsOptions
 // Поиск чата по имени
 func (c *Chats) Find(ctx context.Context, name string) (chat ChatResponse, resp *resty.Response, err error) {
 	options := &ListChatsOptions{
-		availability: "public",
+		Availability: "public",
 		PaginationOptions: PaginationOptions{
-			page: 1,
-			per:  50,
+			Page: 1,
+			Per:  50,
 		},
 	}
 	page := 1

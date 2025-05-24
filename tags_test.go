@@ -36,7 +36,7 @@ func TestGetTagsPaginated(t *testing.T) {
 	// Подготовка мока
 	client.On("R").Return(&resty.Request{})
 	client.On("SetQueryParams", mock.Anything).Return(&resty.Request{})
-	client.On("Get", "tags_url?page=1&per=10").Return(&resty.Response{
+	client.On("Get", "tags_url?Page=1&Per=10").Return(&resty.Response{
 		StatusCode: 200,
 		Body:       []byte(`{"data":[{"id":1,"name":"tag1","users_count":10}]}`),
 	}, nil)
@@ -83,11 +83,11 @@ func TestGetAll(t *testing.T) {
 	// Подготовка мока
 	client.On("R").Return(&resty.Request{})
 	client.On("SetQueryParams", mock.Anything).Return(&resty.Request{})
-	client.On("Get", "tags_url?page=1&per=50").Return(&resty.Response{
+	client.On("Get", "tags_url?Page=1&Per=50").Return(&resty.Response{
 		StatusCode: 200,
 		Body:       []byte(`{"data":[{"id":1,"name":"tag1","users_count":10}]}`),
 	}, nil)
-	client.On("Get", "tags_url?page=2&per=50").Return(&resty.Response{
+	client.On("Get", "tags_url?Page=2&Per=50").Return(&resty.Response{
 		StatusCode: 200,
 		Body:       []byte(`{"data":[]}`),
 	}, nil)
@@ -107,7 +107,7 @@ func TestFind(t *testing.T) {
 	// Подготовка мока
 	client.On("R").Return(&resty.Request{})
 	client.On("SetQueryParams", mock.Anything).Return(&resty.Request{})
-	client.On("Get", "tags_url?page=1&per=50").Return(&resty.Response{
+	client.On("Get", "tags_url?Page=1&Per=50").Return(&resty.Response{
 		StatusCode: 200,
 		Body:       []byte(`{"data":[{"id":1,"name":"tag1","users_count":10}]}`),
 	}, nil)
@@ -130,7 +130,7 @@ func TestUsers(t *testing.T) {
 	// Подготовка мока
 	client.On("R").Return(&resty.Request{})
 	client.On("SetQueryParams", mock.Anything).Return(&resty.Request{})
-	client.On("Get", "tags_url/1/users?page=1&perPage=50").Return(&resty.Response{
+	client.On("Get", "tags_url/1/users?Page=1&perPage=50").Return(&resty.Response{
 		StatusCode: 200,
 		Body:       []byte(`{"data":[{"id":1,"name":"user1"}]}`),
 	}, nil)

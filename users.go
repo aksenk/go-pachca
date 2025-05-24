@@ -93,9 +93,9 @@ func (u *Users) getUsersPaginated(ctx context.Context, options *ListUsersOptions
 	resp, err := u.client.R().
 		SetContext(ctx).
 		SetQueryParams(map[string]string{
-			"per":   fmt.Sprint(options.per),
-			"page":  fmt.Sprint(options.page),
-			"query": options.query,
+			"Per":   fmt.Sprint(options.Per),
+			"Page":  fmt.Sprint(options.Page),
+			"Query": options.Query,
 		}).
 		Get(usersURL)
 	if err != nil {
@@ -116,7 +116,7 @@ func (u *Users) getUsersPaginated(ctx context.Context, options *ListUsersOptions
 }
 
 type ListUsersOptions struct {
-	query string
+	Query string
 	PaginationOptions
 }
 
@@ -127,8 +127,8 @@ func (u *Users) List(ctx context.Context, options *ListUsersOptions) (users []Us
 	if options == nil {
 		options = &ListUsersOptions{
 			PaginationOptions: PaginationOptions{
-				page: 1,
-				per:  50,
+				Page: 1,
+				Per:  50,
 			},
 		}
 	}
@@ -147,11 +147,11 @@ func (u *Users) List(ctx context.Context, options *ListUsersOptions) (users []Us
 
 		users = append(users, usersResponse...)
 
-		if len(usersResponse) < options.per {
+		if len(usersResponse) < options.Per {
 			break
 		}
 
-		options.page++
+		options.Page++
 	}
 
 	return users, resp, nil
@@ -163,10 +163,10 @@ func (u *Users) List(ctx context.Context, options *ListUsersOptions) (users []Us
 func (u *Users) Find(ctx context.Context, query string) (users []UserResponse, resp *resty.Response, err error) {
 	options := &ListUsersOptions{
 		PaginationOptions: PaginationOptions{
-			per:  50,
-			page: 1,
+			Per:  50,
+			Page: 1,
 		},
-		query: query,
+		Query: query,
 	}
 
 	for {
@@ -181,11 +181,11 @@ func (u *Users) Find(ctx context.Context, query string) (users []UserResponse, r
 
 		users = append(users, usersResponse...)
 
-		if len(usersResponse) < options.per {
+		if len(usersResponse) < options.Per {
 			break
 		}
 
-		options.page++
+		options.Page++
 	}
 	return users, resp, nil
 }
