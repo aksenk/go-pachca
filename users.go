@@ -93,9 +93,9 @@ func (u *Users) getUsersPaginated(ctx context.Context, options *ListUsersOptions
 	resp, err := u.client.R().
 		SetContext(ctx).
 		SetQueryParams(map[string]string{
-			"Per":   fmt.Sprint(options.Per),
-			"Page":  fmt.Sprint(options.Page),
-			"Query": options.Query,
+			"per":   fmt.Sprint(options.Per),
+			"page":  fmt.Sprint(options.Page),
+			"query": options.Query,
 		}).
 		Get(usersURL)
 	if err != nil {
