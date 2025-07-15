@@ -51,6 +51,7 @@ type RetryMeta struct {
 	Wait         time.Duration
 	ResponseCode int
 	URL          string
+	Context      context.Context
 }
 
 type ClientOptions struct {
@@ -130,6 +131,7 @@ func NewClient(options *ClientOptions) (*Client, error) {
 						Wait:         wait,
 						ResponseCode: r.StatusCode(),
 						URL:          r.Request.URL,
+						Context:      r.Request.Context(),
 					})
 				}
 			})
