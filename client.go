@@ -3,7 +3,9 @@ package pachca
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"net"
 	"strconv"
 	"time"
 
@@ -101,17 +103,30 @@ func NewClient(options *ClientOptions) (*Client, error) {
 		AddRetryCondition(
 			func(r *resty.Response, err error) bool {
 				// ретрай на ошибки сети, таймауты и т.д.
-				if err != nil {
-					return true
+				if err != nil && (errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded)) {
+					return false
 				}
-				// ретрай на 429 (Too Many Requests)
-				if r.StatusCode() == 429 {
-					return true
+
+				if r == nil && err != nil {
+					// ретраим таймауты
+					var netErr net.Error
+					if errors.As(err, &netErr) && netErr.Timeout() {
+						return true
+					}
+					// Другие ошибки — не ретраим (например, "no such host", TLS, и т.п.)
+					return false
 				}
-				// ретрай на 5xx ошибки
-				if r.StatusCode() >= 500 && r.StatusCode() < 600 { // Server errors
-					return true
+
+				if r != nil {
+					code := r.StatusCode()
+					if code == 429 {
+						return true
+					}
+					if code >= 500 && code != 501 && code != 505 {
+						return true
+					}
 				}
+
 				return false
 			}).
 		AddRetryHook(
