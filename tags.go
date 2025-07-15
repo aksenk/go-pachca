@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+
 	"github.com/go-resty/resty/v2"
 )
 
@@ -50,7 +51,7 @@ type ListTagsOptions struct {
 // Данный метод доступен для работы только с access_token администратора пространства
 func (t *Tags) New(ctx context.Context, object *Tag) (*TagResponse, *resty.Response, error) {
 	if object.Name == "" {
-		return nil, nil, fmt.Errorf("%w: incorrect tag name %d", ErrInvalidInput, object.Name)
+		return nil, nil, fmt.Errorf("%w: incorrect tag name %s", ErrInvalidInput, object.Name)
 	}
 
 	body := struct {
@@ -68,7 +69,7 @@ func (t *Tags) New(ctx context.Context, object *Tag) (*TagResponse, *resty.Respo
 	}
 
 	if resp.StatusCode() != 200 {
-		return nil, resp, fmt.Errorf("%w: %d, body: %s", ErrResponseCode, resp.StatusCode())
+		return nil, resp, fmt.Errorf("%w: %d", ErrResponseCode, resp.StatusCode())
 	}
 
 	var tag TagResponseRaw
@@ -85,7 +86,7 @@ func (t *Tags) New(ctx context.Context, object *Tag) (*TagResponse, *resty.Respo
 // Данный метод доступен для работы только с access_token администратора пространства.
 func (t *Tags) Edit(ctx context.Context, tagID int, object *Tag) (*TagResponse, *resty.Response, error) {
 	if object.Name == "" {
-		return nil, nil, fmt.Errorf("%w: incorrect tag name %d", ErrInvalidInput, object.Name)
+		return nil, nil, fmt.Errorf("%w: incorrect tag name %s", ErrInvalidInput, object.Name)
 	}
 	if tagID <= 0 {
 		return nil, nil, fmt.Errorf("%w: incorrect tag ID %d", ErrInvalidInput, tagID)
@@ -106,7 +107,7 @@ func (t *Tags) Edit(ctx context.Context, tagID int, object *Tag) (*TagResponse, 
 	}
 
 	if resp.StatusCode() != 200 {
-		return nil, resp, fmt.Errorf("%w: %d, body: %s", ErrResponseCode, resp.StatusCode())
+		return nil, resp, fmt.Errorf("%w: %d", ErrResponseCode, resp.StatusCode())
 	}
 
 	var tag TagResponseRaw
@@ -134,7 +135,7 @@ func (t *Tags) Delete(ctx context.Context, tagID int) (*resty.Response, error) {
 	}
 
 	if resp.StatusCode() != 200 {
-		return resp, fmt.Errorf("%w: %d, body: %s", ErrResponseCode, resp.StatusCode())
+		return resp, fmt.Errorf("%w: %d", ErrResponseCode, resp.StatusCode())
 	}
 
 	return resp, nil
@@ -161,7 +162,7 @@ func (t *Tags) getTagsPaginated(ctx context.Context, options *ListTagsOptions) (
 		return nil, resp, err
 	}
 	if resp.StatusCode() != 200 {
-		return nil, resp, fmt.Errorf("%w: %d, body: %s", ErrResponseCode, resp.StatusCode())
+		return nil, resp, fmt.Errorf("%w: %d", ErrResponseCode, resp.StatusCode())
 	}
 
 	var tags TagsResponseRaw
@@ -188,7 +189,7 @@ func (t *Tags) Get(ctx context.Context, tagID int) (TagResponse, *resty.Response
 	}
 
 	if resp.StatusCode() != 200 {
-		return TagResponse{}, resp, fmt.Errorf("%w: %d, body: %s", ErrResponseCode, resp.StatusCode())
+		return TagResponse{}, resp, fmt.Errorf("%w: %d", ErrResponseCode, resp.StatusCode())
 	}
 
 	var tag TagResponseRaw

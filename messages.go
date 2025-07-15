@@ -4,8 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/go-resty/resty/v2"
 	"time"
+
+	"github.com/go-resty/resty/v2"
 )
 
 // Messages
@@ -24,7 +25,7 @@ type Message struct {
 	Buttons            [][]MessageButton `json:"buttons,omitempty"`
 	ParentMessageID    *int              `json:"parent_message_id,omitempty"`
 	DisplayAvatarURL   string            `json:"display_avatar_url"`
-	DisplayName		   string		     `json:"display_name,omitempty"`
+	DisplayName        string            `json:"display_name,omitempty"`
 	SkipInviteMentions bool              `json:"skip_invite_mentions,omitempty"`
 	LinkPreview        bool              `json:"link_preview,omitempty"`
 }

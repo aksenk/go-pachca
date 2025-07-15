@@ -4,9 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/go-resty/resty/v2"
 	"strconv"
 	"time"
+
+	"github.com/go-resty/resty/v2"
 )
 
 const (
@@ -53,13 +54,12 @@ type RetryMeta struct {
 }
 
 type ClientOptions struct {
-	ApiURL            string
-	AccessToken       string
-	RetryCount        int
-	RetryWait         time.Duration
-	RetryMaxWait      time.Duration
-	DisableRetryOn5XX bool
-	RetryObserver     RetryObserver
+	ApiURL        string
+	AccessToken   string
+	RetryCount    int
+	RetryWait     time.Duration
+	RetryMaxWait  time.Duration
+	RetryObserver RetryObserver
 }
 
 // NewClient
@@ -82,11 +82,11 @@ func NewClient(options *ClientOptions) (*Client, error) {
 	}
 
 	if options.RetryWait <= 0 {
-		options.RetryWait = 1
+		options.RetryWait = 1 * time.Second
 	}
 
 	if options.RetryMaxWait <= 0 {
-		options.RetryMaxWait = 30
+		options.RetryMaxWait = 30 * time.Second
 	}
 
 	observer := options.RetryObserver
@@ -107,11 +107,9 @@ func NewClient(options *ClientOptions) (*Client, error) {
 				if r.StatusCode() == 429 {
 					return true
 				}
-				// ретрай на 5xx ошибки, если не отключено
-				if !options.DisableRetryOn5XX {
-					if r.StatusCode() >= 500 && r.StatusCode() < 600 { // Server errors
-						return true
-					}
+				// ретрай на 5xx ошибки
+				if r.StatusCode() >= 500 && r.StatusCode() < 600 { // Server errors
+					return true
 				}
 				return false
 			}).

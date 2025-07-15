@@ -1,0 +1,15 @@
+pre-commit:
+  parallel: true
+  jobs:
+    - name: gofmt
+      run: gofmt -l .
+    - name: govet
+      run: go vet ./...
+    - name: gotest
+      run: go test -v -race ./...
+    - name: staticcheck
+      run: staticcheck ./...
+    - name: goimports
+      run: goimports -l .
+    - name: golangci-lint
+      run: golangci-lint run
