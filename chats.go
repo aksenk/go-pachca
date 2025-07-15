@@ -4,8 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/go-resty/resty/v2"
 	"time"
+
+	"github.com/go-resty/resty/v2"
 )
 
 // Chats
@@ -249,7 +250,7 @@ func (c *Chats) getChatsPaginated(ctx context.Context, options *ListChatsOptions
 		return nil, resp, err
 	}
 	if resp.StatusCode() != 200 {
-		return nil, resp, fmt.Errorf("%w: %d, body: %s", ErrResponseCode, resp.StatusCode())
+		return nil, resp, fmt.Errorf("%w: %d", ErrResponseCode, resp.StatusCode())
 	}
 
 	var chats ChatsResponseRaw
