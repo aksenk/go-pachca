@@ -152,6 +152,9 @@ func NewClient(options *ClientOptions) (*Client, error) {
 					})
 				}
 			})
+
+	pachcaClient.SetLogger(nil)
+
 	return &Client{
 		client:   pachcaClient,
 		Messages: &Messages{client: pachcaClient},
