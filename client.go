@@ -33,12 +33,13 @@ var (
 // Client
 // Клиент для работы с мессенджером pachca
 type Client struct {
-	client   *resty.Client
-	Messages *Messages
-	Threads  *Threads
-	Users    *Users
-	Chats    *Chats
-	Tags     *Tags
+	client    *resty.Client
+	Messages  *Messages
+	Threads   *Threads
+	Users     *Users
+	Chats     *Chats
+	Tags      *Tags
+	Reactions *Reactions
 }
 
 type PaginationOptions struct {
