@@ -154,12 +154,13 @@ func NewClient(options *ClientOptions) (*Client, error) {
 				}
 			})
 	return &Client{
-		client:   pachcaClient,
-		Messages: &Messages{client: pachcaClient},
-		Threads:  &Threads{client: pachcaClient},
-		Users:    &Users{client: pachcaClient},
-		Chats:    &Chats{client: pachcaClient},
-		Tags:     &Tags{client: pachcaClient},
+		client:    pachcaClient,
+		Messages:  &Messages{client: pachcaClient},
+		Threads:   &Threads{client: pachcaClient},
+		Users:     &Users{client: pachcaClient},
+		Chats:     &Chats{client: pachcaClient},
+		Tags:      &Tags{client: pachcaClient},
+		Reactions: &Reactions{client: pachcaClient},
 	}, nil
 }
 
