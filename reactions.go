@@ -54,7 +54,7 @@ func (r *Reactions) Add(ctx context.Context, messageID int, reactionCode string)
 		return resp, err
 	}
 
-	if resp.StatusCode() != 200 {
+	if resp.StatusCode() != 201 {
 		return resp, fmt.Errorf("%w: %d", ErrResponseCode, resp.StatusCode())
 	}
 
@@ -78,7 +78,7 @@ func (r *Reactions) Del(ctx context.Context, messageID int, reactionCode string)
 		return resp, err
 	}
 
-	if resp.StatusCode() != 200 {
+	if resp.StatusCode() != 204 {
 		return resp, fmt.Errorf("%w: %d", ErrResponseCode, resp.StatusCode())
 	}
 
