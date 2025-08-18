@@ -97,6 +97,7 @@ func NewClient(options *ClientOptions) (*Client, error) {
 	observer := options.RetryObserver
 
 	pachcaClient := resty.New().
+		SetLogger(nil).
 		SetBaseURL(options.ApiURL).
 		SetHeader("Authorization", fmt.Sprintf("Bearer %v", options.AccessToken)).
 		SetRetryCount(options.RetryCount).
