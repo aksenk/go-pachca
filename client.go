@@ -59,12 +59,13 @@ type RetryMeta struct {
 }
 
 type ClientOptions struct {
-	ApiURL        string
-	AccessToken   string
-	RetryCount    int
-	RetryWait     time.Duration
-	RetryMaxWait  time.Duration
-	RetryObserver RetryObserver
+	ApiURL          string
+	AccessToken     string
+	RetryCount      int
+	RetryWait       time.Duration
+	RetryMaxWait    time.Duration
+	RetryObserver   RetryObserver
+	RequestsTimeout time.Duration
 }
 
 // NewClient
@@ -94,10 +95,15 @@ func NewClient(options *ClientOptions) (*Client, error) {
 		options.RetryMaxWait = 30 * time.Second
 	}
 
+	if options.RequestsTimeout <= 0 {
+		options.RequestsTimeout = 10 * time.Second
+	}
+
 	observer := options.RetryObserver
 
 	pachcaClient := resty.New().
 		SetLogger(nil).
+		SetTimeout(options.RequestsTimeout).
 		SetBaseURL(options.ApiURL).
 		SetHeader("Authorization", fmt.Sprintf("Bearer %v", options.AccessToken)).
 		SetRetryCount(options.RetryCount).
