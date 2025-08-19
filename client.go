@@ -5,8 +5,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"net"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/go-resty/resty/v2"
@@ -109,44 +111,44 @@ func NewClient(options *ClientOptions) (*Client, error) {
 		SetRetryCount(options.RetryCount).
 		SetRetryWaitTime(options.RetryWait).
 		SetRetryMaxWaitTime(options.RetryMaxWait).
+		SetRetryAfter(func(client *resty.Client, resp *resty.Response) (time.Duration, error) {
+			if retryAfter := resp.Header().Get("Retry-After"); retryAfter != "" {
+				if secs, err := strconv.Atoi(retryAfter); err == nil && secs > 0 {
+					return time.Duration(secs) * time.Second, nil
+				}
+				// Обработка формата даты (если необходимо)
+				if t, err := time.Parse(time.RFC1123, retryAfter); err == nil {
+					return time.Until(t), nil
+				}
+			}
+			return 0, nil // Использует стандартный backoff
+		}).
 		AddRetryCondition(
 			func(r *resty.Response, err error) bool {
-				// ретрай на ошибки сети, таймауты и т.д.
-				if err != nil && (errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded)) {
-					return false
-				}
-
-				if r == nil && err != nil {
-					// ретраим таймауты
+				if err != nil {
 					var netErr net.Error
 					if errors.As(err, &netErr) && netErr.Timeout() {
 						return true
 					}
-					// Другие ошибки — не ретраим (например, "no such host", TLS, и т.п.)
+					// Явно обрабатываем другие типы ошибок
+					if errors.Is(err, io.EOF) || strings.Contains(err.Error(), "connection reset") {
+						return true
+					}
 					return false
 				}
 
 				if r != nil {
 					code := r.StatusCode()
-					if code == 429 {
-						return true
-					}
-					if code >= 500 && code != 501 && code != 505 {
+					if code == 429 || code >= 500 {
 						return true
 					}
 				}
-
 				return false
 			}).
 		AddRetryHook(
 			func(r *resty.Response, err error) {
 				wait := 0 * time.Second
-				if retryAfter := r.Header().Get("Retry-After"); retryAfter != "" {
-					if secs, err := strconv.Atoi(retryAfter); err == nil && secs > 0 {
-						wait = time.Duration(secs) * time.Second
-						time.Sleep(wait)
-					}
-				}
+
 				// Если есть наблюдатель, вызываем его с метаданными,
 				// чтобы можно было отслеживать попытки ретрая со стороны приложения
 				if options.RetryObserver != nil {
