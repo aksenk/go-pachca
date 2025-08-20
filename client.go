@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"io"
 	"net"
-	"strconv"
 	"strings"
 	"time"
 
@@ -53,7 +52,6 @@ type RetryObserver func(meta RetryMeta)
 
 type RetryMeta struct {
 	Attempt      int
-	Wait         time.Duration
 	ResponseCode int
 	URL          string
 	Method       string
@@ -111,18 +109,6 @@ func NewClient(options *ClientOptions) (*Client, error) {
 		SetRetryCount(options.RetryCount).
 		SetRetryWaitTime(options.RetryWait).
 		SetRetryMaxWaitTime(options.RetryMaxWait).
-		SetRetryAfter(func(client *resty.Client, resp *resty.Response) (time.Duration, error) {
-			if retryAfter := resp.Header().Get("Retry-After"); retryAfter != "" {
-				if secs, err := strconv.Atoi(retryAfter); err == nil && secs > 0 {
-					return time.Duration(secs) * time.Second, nil
-				}
-				// Обработка формата даты (если необходимо)
-				if t, err := time.Parse(time.RFC1123, retryAfter); err == nil {
-					return time.Until(t), nil
-				}
-			}
-			return 0, nil // Использует стандартный backoff
-		}).
 		AddRetryCondition(
 			func(r *resty.Response, err error) bool {
 				if err != nil {
@@ -130,7 +116,6 @@ func NewClient(options *ClientOptions) (*Client, error) {
 					if errors.As(err, &netErr) && netErr.Timeout() {
 						return true
 					}
-					// Явно обрабатываем другие типы ошибок
 					if errors.Is(err, io.EOF) || strings.Contains(err.Error(), "connection reset") {
 						return true
 					}
@@ -147,14 +132,11 @@ func NewClient(options *ClientOptions) (*Client, error) {
 			}).
 		AddRetryHook(
 			func(r *resty.Response, err error) {
-				wait := 0 * time.Second
-
 				// Если есть наблюдатель, вызываем его с метаданными,
 				// чтобы можно было отслеживать попытки ретрая со стороны приложения
 				if options.RetryObserver != nil {
 					observer(RetryMeta{
 						Attempt:      r.Request.Attempt,
-						Wait:         wait,
 						ResponseCode: r.StatusCode(),
 						URL:          r.Request.URL,
 						Context:      r.Request.Context(),
