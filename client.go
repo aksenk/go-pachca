@@ -114,7 +114,7 @@ func NewClient(options *ClientOptions) (*Client, error) {
 			func(r *resty.Response, err error) bool {
 				defer func() {
 					if rec := recover(); rec != nil {
-						fmt.Printf("panic in retry hook: %+v (Request=%+v, Response=%+v)\n", rec, r.Request, r)
+						fmt.Printf("panic in retry hook condition: %+v (Request=%+v, Response=%+v)\n", rec, r.Request, r)
 					}
 				}()
 
