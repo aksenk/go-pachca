@@ -136,6 +136,11 @@ func NewClient(options *ClientOptions) (*Client, error) {
 				// Если есть наблюдатель, вызываем его с метаданными,
 				// чтобы можно было отслеживать попытки ретрая со стороны приложения
 				if options.RetryObserver != nil {
+					defer func() {
+						if rec := recover(); rec != nil {
+							fmt.Printf("panic in retry hook: %+v (Request=%+v, Response=%+v)\n", rec, r.Request, r)
+						}
+					}()
 					meta := RetryMeta{
 						Error: err,
 					}
