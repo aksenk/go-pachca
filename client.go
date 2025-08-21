@@ -56,6 +56,7 @@ type RetryMeta struct {
 	URL          string
 	Method       string
 	Context      context.Context
+	Error        error
 }
 
 type ClientOptions struct {
@@ -135,13 +136,21 @@ func NewClient(options *ClientOptions) (*Client, error) {
 				// Если есть наблюдатель, вызываем его с метаданными,
 				// чтобы можно было отслеживать попытки ретрая со стороны приложения
 				if options.RetryObserver != nil {
-					observer(RetryMeta{
-						Attempt:      r.Request.Attempt,
-						ResponseCode: r.StatusCode(),
-						URL:          r.Request.URL,
-						Context:      r.Request.Context(),
-						Method:       r.Request.Method,
-					})
+					meta := RetryMeta{
+						Error: err,
+					}
+					if r != nil {
+						if r.Request != nil {
+							meta.Attempt = r.Request.Attempt
+							meta.URL = r.Request.URL
+							meta.Context = r.Request.Context()
+							meta.Method = r.Request.Method
+						}
+						meta.ResponseCode = r.StatusCode()
+					}
+
+					// Вызываем наблюдателя с собранной информацией
+					observer(meta)
 				}
 			})
 	return &Client{
