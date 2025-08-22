@@ -112,11 +112,11 @@ func NewClient(options *ClientOptions) (*Client, error) {
 		SetRetryMaxWaitTime(options.RetryMaxWait).
 		AddRetryCondition(
 			func(r *resty.Response, err error) bool {
-				defer func() {
-					if rec := recover(); rec != nil {
-						fmt.Printf("panic in retry hook condition: %+v (Request=%+v, Response=%+v)\n", rec, r.Request, r)
-					}
-				}()
+				//defer func() {
+				//	if rec := recover(); rec != nil {
+				//		fmt.Printf("panic in retry hook condition: %+v (Request=%+v, Response=%+v)\n", rec, r.Request, r)
+				//	}
+				//}()
 
 				if err != nil {
 					var netErr net.Error
@@ -139,11 +139,11 @@ func NewClient(options *ClientOptions) (*Client, error) {
 			}).
 		AddRetryHook(
 			func(r *resty.Response, err error) {
-				defer func() {
-					if rec := recover(); rec != nil {
-						fmt.Printf("panic in retry hook: %+v (Request=%+v, Response=%+v)\n", rec, r.Request, r)
-					}
-				}()
+				//defer func() {
+				//	if rec := recover(); rec != nil {
+				//		fmt.Printf("panic in retry hook: %+v (Request=%+v, Response=%+v)\n", rec, r.Request, r)
+				//	}
+				//}()
 				// Если есть наблюдатель, вызываем его с метаданными,
 				// чтобы можно было отслеживать попытки ретрая со стороны приложения
 				if options.RetryObserver != nil {
