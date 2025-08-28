@@ -154,7 +154,6 @@ func NewClient(options *ClientOptions) (*Client, error) {
 						if r.Request != nil {
 							meta.Attempt = r.Request.Attempt
 							meta.URL = r.Request.URL
-							meta.Context = r.Request.Context()
 							meta.Method = r.Request.Method
 						}
 						meta.ResponseCode = r.StatusCode()
