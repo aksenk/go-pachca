@@ -146,20 +146,29 @@ func NewClient(options *ClientOptions) (*Client, error) {
 				}()
 				// Если есть наблюдатель, вызываем его с метаданными,
 				// чтобы можно было отслеживать попытки ретрая со стороны приложения
+				fmt.Printf("if options.RetryObserver != nil")
 				if options.RetryObserver != nil {
+					fmt.Printf("meta := RetryMeta")
 					meta := RetryMeta{
 						Error: err,
 					}
+					fmt.Printf("if r != nil")
 					if r != nil {
+						fmt.Printf("if r.Request != nil")
 						if r.Request != nil {
+							fmt.Printf("meta.Attempt = r.Request.Attempt")
 							meta.Attempt = r.Request.Attempt
+							fmt.Printf("meta.URL = r.Request.URL")
 							meta.URL = r.Request.URL
+							fmt.Printf("meta.Method = r.Request.Method")
 							meta.Method = r.Request.Method
 						}
+						fmt.Printf("meta.ResponseCode = r.StatusCode()")
 						meta.ResponseCode = r.StatusCode()
 					}
 
 					// Вызываем наблюдателя с собранной информацией
+					fmt.Printf("observer(meta)")
 					observer(meta)
 				}
 			})
