@@ -162,6 +162,7 @@ func NewClient(options *ClientOptions) (*Client, error) {
 							meta.URL = r.Request.URL
 							fmt.Printf("meta.Method = r.Request.Method")
 							meta.Method = r.Request.Method
+							meta.Context = r.Request.Context()
 						}
 						fmt.Printf("meta.ResponseCode = r.StatusCode()")
 						meta.ResponseCode = r.StatusCode()
