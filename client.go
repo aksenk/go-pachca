@@ -112,11 +112,11 @@ func NewClient(options *ClientOptions) (*Client, error) {
 		SetRetryMaxWaitTime(options.RetryMaxWait).
 		AddRetryCondition(
 			func(r *resty.Response, err error) bool {
-				//defer func() {
-				//	if rec := recover(); rec != nil {
-				//		fmt.Printf("panic in retry hook condition: %+v (Request=%+v, Response=%+v)\n", rec, r.Request, r)
-				//	}
-				//}()
+				defer func() {
+					if rec := recover(); rec != nil {
+						fmt.Printf("panic in retry hook condition: %+v (Request=%+v, Response=%+v)\n", rec, r.Request, r)
+					}
+				}()
 
 				if err != nil {
 					var netErr net.Error
@@ -139,37 +139,28 @@ func NewClient(options *ClientOptions) (*Client, error) {
 			}).
 		AddRetryHook(
 			func(r *resty.Response, err error) {
-				//defer func() {
-				//	if rec := recover(); rec != nil {
-				//		fmt.Printf("panic in retry hook: %+v (Request=%+v, Response=%+v)\n", rec, r.Request, r)
-				//	}
-				//}()
+				defer func() {
+					if rec := recover(); rec != nil {
+						fmt.Printf("panic in retry hook: %+v (Request=%+v, Response=%+v)\n", rec, r.Request, r)
+					}
+				}()
 				// Если есть наблюдатель, вызываем его с метаданными,
 				// чтобы можно было отслеживать попытки ретрая со стороны приложения
-				fmt.Printf("if options.RetryObserver != nil")
 				if options.RetryObserver != nil {
-					fmt.Printf("meta := RetryMeta")
 					meta := RetryMeta{
 						Error: err,
 					}
-					fmt.Printf("if r != nil")
 					if r != nil {
-						fmt.Printf("if r.Request != nil")
 						if r.Request != nil {
-							fmt.Printf("meta.Attempt = r.Request.Attempt")
 							meta.Attempt = r.Request.Attempt
-							fmt.Printf("meta.URL = r.Request.URL")
 							meta.URL = r.Request.URL
-							fmt.Printf("meta.Method = r.Request.Method")
 							meta.Method = r.Request.Method
 							meta.Context = r.Request.Context()
 						}
-						fmt.Printf("meta.ResponseCode = r.StatusCode()")
 						meta.ResponseCode = r.StatusCode()
 					}
 
 					// Вызываем наблюдателя с собранной информацией
-					fmt.Printf("observer(meta)")
 					observer(meta)
 				}
 			})
