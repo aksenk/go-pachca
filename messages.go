@@ -128,34 +128,6 @@ func (m *Messages) Get(ctx context.Context, messageID int) (*MessageResponse, *r
 	return &r.Data, resp, nil
 }
 
-func (m *Messages) GetAll(ctx context.Context, chatID int) ([]MessageResponse, *resty.Response, error) {
-	if chatID <= 0 {
-		return nil, nil, fmt.Errorf("%v: incorrect chat ID %d", ErrInvalidInput, chatID)
-	}
-
-	var messages *MessagesResponseRaw
-
-	resp, err := m.client.R().
-		SetContext(ctx).
-		SetQueryString(fmt.Sprintf("chat_id=%v", chatID)).
-		SetHeader("Content-Type", "application/json").
-		Get(messagesURL)
-	if err != nil {
-		return nil, resp, err
-	}
-
-	if resp.StatusCode() != 200 {
-		return nil, resp, fmt.Errorf("%v: %v", ErrResponseCode, resp.StatusCode())
-	}
-
-	err = json.Unmarshal(resp.Body(), &messages)
-	if err != nil {
-		return nil, resp, fmt.Errorf("%v: %v", ErrResponseDecode, err)
-	}
-
-	return messages.Data, resp, nil
-}
-
 func (m *Messages) GetChatMessages(ctx context.Context, opts *ChatMessagesOptions) ([]MessageResponse, *resty.Response, error) {
 	if opts == nil {
 		return nil, nil, fmt.Errorf("%v: options is nil", ErrInvalidInput)
