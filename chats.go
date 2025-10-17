@@ -237,10 +237,10 @@ func (c *Chats) List(ctx context.Context, options *ListChatsOptions) (allChats [
 func (c *Chats) getChatsPaginated(ctx context.Context, options *ListChatsOptions) ([]ChatResponse, *resty.Response, error) {
 	resp, err := c.client.R().
 		SetQueryParams(map[string]string{
-			"Page":         fmt.Sprint(options.Page),
-			"Per":          fmt.Sprint(options.Per),
-			"Availability": options.Availability,
-			"Sort":         options.Sort,
+			"page":         fmt.Sprint(options.Page),
+			"per":          fmt.Sprint(options.Per),
+			"availability": options.Availability,
+			"sort":         options.Sort,
 			//"last_message_at_after":  options.LastMessageAtAfter,
 			//"last_message_at_before": options.LastMessageAtBefore,
 		}).
