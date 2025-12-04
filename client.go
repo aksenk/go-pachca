@@ -5,8 +5,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"net"
-	"strconv"
+	"strings"
 	"time"
 
 	"github.com/go-resty/resty/v2"
@@ -33,12 +34,13 @@ var (
 // Client
 // Клиент для работы с мессенджером pachca
 type Client struct {
-	client   *resty.Client
-	Messages *Messages
-	Threads  *Threads
-	Users    *Users
-	Chats    *Chats
-	Tags     *Tags
+	client    *resty.Client
+	Messages  *Messages
+	Threads   *Threads
+	Users     *Users
+	Chats     *Chats
+	Tags      *Tags
+	Reactions *Reactions
 }
 
 type PaginationOptions struct {
@@ -50,20 +52,21 @@ type RetryObserver func(meta RetryMeta)
 
 type RetryMeta struct {
 	Attempt      int
-	Wait         time.Duration
 	ResponseCode int
 	URL          string
 	Method       string
 	Context      context.Context
+	Error        error
 }
 
 type ClientOptions struct {
-	ApiURL        string
-	AccessToken   string
-	RetryCount    int
-	RetryWait     time.Duration
-	RetryMaxWait  time.Duration
-	RetryObserver RetryObserver
+	ApiURL          string
+	AccessToken     string
+	RetryCount      int
+	RetryWait       time.Duration
+	RetryMaxWait    time.Duration
+	RetryObserver   RetryObserver
+	RequestsTimeout time.Duration
 }
 
 // NewClient
@@ -93,9 +96,15 @@ func NewClient(options *ClientOptions) (*Client, error) {
 		options.RetryMaxWait = 30 * time.Second
 	}
 
+	if options.RequestsTimeout <= 0 {
+		options.RequestsTimeout = 10 * time.Second
+	}
+
 	observer := options.RetryObserver
 
 	pachcaClient := resty.New().
+		//SetLogger(nil).
+		SetTimeout(options.RequestsTimeout).
 		SetBaseURL(options.ApiURL).
 		SetHeader("Authorization", fmt.Sprintf("Bearer %v", options.AccessToken)).
 		SetRetryCount(options.RetryCount).
@@ -103,62 +112,66 @@ func NewClient(options *ClientOptions) (*Client, error) {
 		SetRetryMaxWaitTime(options.RetryMaxWait).
 		AddRetryCondition(
 			func(r *resty.Response, err error) bool {
-				// ретрай на ошибки сети, таймауты и т.д.
-				if err != nil && (errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded)) {
-					return false
-				}
+				//defer func() {
+				//	if rec := recover(); rec != nil {
+				//		fmt.Printf("panic in retry hook condition: %+v (Request=%+v, Response=%+v)\n", rec, r.Request, r)
+				//	}
+				//}()
 
-				if r == nil && err != nil {
-					// ретраим таймауты
+				if err != nil {
 					var netErr net.Error
 					if errors.As(err, &netErr) && netErr.Timeout() {
 						return true
 					}
-					// Другие ошибки — не ретраим (например, "no such host", TLS, и т.п.)
+					if errors.Is(err, io.EOF) || strings.Contains(err.Error(), "connection reset") {
+						return true
+					}
 					return false
 				}
 
 				if r != nil {
 					code := r.StatusCode()
-					if code == 429 {
-						return true
-					}
-					if code >= 500 && code != 501 && code != 505 {
+					if code == 429 || code >= 500 {
 						return true
 					}
 				}
-
 				return false
 			}).
 		AddRetryHook(
 			func(r *resty.Response, err error) {
-				wait := 0 * time.Second
-				if retryAfter := r.Header().Get("Retry-After"); retryAfter != "" {
-					if secs, err := strconv.Atoi(retryAfter); err == nil && secs > 0 {
-						wait = time.Duration(secs) * time.Second
-						time.Sleep(wait)
-					}
-				}
+				//defer func() {
+				//	if rec := recover(); rec != nil {
+				//		fmt.Printf("panic in retry hook: %+v (Request=%+v, Response=%+v)\n", rec, r.Request, r)
+				//	}
+				//}()
 				// Если есть наблюдатель, вызываем его с метаданными,
 				// чтобы можно было отслеживать попытки ретрая со стороны приложения
 				if options.RetryObserver != nil {
-					observer(RetryMeta{
-						Attempt:      r.Request.Attempt,
-						Wait:         wait,
-						ResponseCode: r.StatusCode(),
-						URL:          r.Request.URL,
-						Context:      r.Request.Context(),
-						Method:       r.Request.Method,
-					})
+					meta := RetryMeta{
+						Error: err,
+					}
+					if r != nil {
+						if r.Request != nil {
+							meta.Attempt = r.Request.Attempt
+							meta.URL = r.Request.URL
+							meta.Method = r.Request.Method
+							meta.Context = r.Request.Context()
+						}
+						meta.ResponseCode = r.StatusCode()
+					}
+
+					// Вызываем наблюдателя с собранной информацией
+					observer(meta)
 				}
 			})
 	return &Client{
-		client:   pachcaClient,
-		Messages: &Messages{client: pachcaClient},
-		Threads:  &Threads{client: pachcaClient},
-		Users:    &Users{client: pachcaClient},
-		Chats:    &Chats{client: pachcaClient},
-		Tags:     &Tags{client: pachcaClient},
+		client:    pachcaClient,
+		Messages:  &Messages{client: pachcaClient},
+		Threads:   &Threads{client: pachcaClient},
+		Users:     &Users{client: pachcaClient},
+		Chats:     &Chats{client: pachcaClient},
+		Tags:      &Tags{client: pachcaClient},
+		Reactions: &Reactions{client: pachcaClient},
 	}, nil
 }
 

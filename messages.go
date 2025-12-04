@@ -15,6 +15,11 @@ type Messages struct {
 	client *resty.Client
 }
 
+type ChatMessagesOptions struct {
+	ChatID int
+	PaginationOptions
+}
+
 // Message
 // Объект для сообщения pachca
 type Message struct {
@@ -123,16 +128,31 @@ func (m *Messages) Get(ctx context.Context, messageID int) (*MessageResponse, *r
 	return &r.Data, resp, nil
 }
 
-func (m *Messages) GetAll(ctx context.Context, chatID int) ([]MessageResponse, *resty.Response, error) {
-	if chatID <= 0 {
-		return nil, nil, fmt.Errorf("%v: incorrect chat ID %d", ErrInvalidInput, chatID)
+func (m *Messages) GetChatMessages(ctx context.Context, opts *ChatMessagesOptions) ([]MessageResponse, *resty.Response, error) {
+	if opts == nil {
+		return nil, nil, fmt.Errorf("%v: options is nil", ErrInvalidInput)
+	}
+	var messages *MessagesResponseRaw
+
+	if opts.ChatID <= 0 {
+		return nil, nil, fmt.Errorf("%v: incorrect chat ID %d", ErrInvalidInput, opts.ChatID)
 	}
 
-	var messages *MessagesResponseRaw
+	if opts.Page <= 0 {
+		opts.Page = 1
+	}
+
+	if opts.Per <= 0 {
+		opts.Per = 50
+	}
 
 	resp, err := m.client.R().
 		SetContext(ctx).
-		SetQueryString(fmt.Sprintf("chat_id=%v", chatID)).
+		SetQueryParams(map[string]string{
+			"per":     fmt.Sprint(opts.Per),
+			"page":    fmt.Sprint(opts.Page),
+			"chat_id": fmt.Sprint(opts.ChatID),
+		}).
 		SetHeader("Content-Type", "application/json").
 		Get(messagesURL)
 	if err != nil {

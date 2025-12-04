@@ -145,16 +145,16 @@ func (t *Tags) Delete(ctx context.Context, tagID int) (*resty.Response, error) {
 // Запрос списка тегов с пагинацией
 func (t *Tags) getTagsPaginated(ctx context.Context, options *ListTagsOptions) ([]TagResponse, *resty.Response, error) {
 	if options.Page <= 0 {
-		return nil, nil, fmt.Errorf("%w: incorrect Page %d", ErrInvalidInput, options.Page)
+		return nil, nil, fmt.Errorf("%w: incorrect page parameter %d", ErrInvalidInput, options.Page)
 	}
 	if options.Per <= 0 {
-		return nil, nil, fmt.Errorf("%w: incorrect Per %d", ErrInvalidInput, &options.Per)
+		return nil, nil, fmt.Errorf("%w: incorrect per parameter %d", ErrInvalidInput, &options.Per)
 
 	}
 	resp, err := t.client.R().
 		SetQueryParams(map[string]string{
-			"Page": fmt.Sprint(options.Page),
-			"Per":  fmt.Sprint(options.Per),
+			"page": fmt.Sprint(options.Page),
+			"per":  fmt.Sprint(options.Per),
 		}).
 		SetContext(ctx).
 		Get(tagsURL)
@@ -322,8 +322,8 @@ func (t *Tags) getTagUsersPaginated(ctx context.Context, tagID int, options *Tag
 	resp, err := t.client.R().
 		SetContext(ctx).
 		SetQueryParams(map[string]string{
-			"Page": fmt.Sprint(options.Page),
-			"Per":  fmt.Sprint(options.Per),
+			"page": fmt.Sprint(options.Page),
+			"per":  fmt.Sprint(options.Per),
 		}).
 		Get(url)
 	if err != nil {
