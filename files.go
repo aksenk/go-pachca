@@ -60,7 +60,7 @@ func (f *Files) UploadFile(ctx context.Context, fileName string, fileContent []b
 
 	uploadResp, err := f.client.R().
 		SetContext(ctx).
-		SetMultipartFormData(map[string]string{
+		SetFormData(map[string]string{
 			"Content-Disposition": params.ContentDisposition,
 			"acl":                 params.ACL,
 			"policy":              params.Policy,
