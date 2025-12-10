@@ -60,7 +60,6 @@ func (f *Files) UploadFile(ctx context.Context, fileName string, fileContent []b
 
 	uploadResp, err := f.client.R().
 		SetContext(ctx).
-		SetFileReader("file", fileName, reader).
 		SetMultipartFormData(map[string]string{
 			"Content-Disposition": params.ContentDisposition,
 			"acl":                 params.ACL,
@@ -71,6 +70,7 @@ func (f *Files) UploadFile(ctx context.Context, fileName string, fileContent []b
 			"x-amz-signature":     params.XAmzSignature,
 			"key":                 params.Key,
 		}).
+		SetFileReader("file", fileName, reader).
 		Post(params.DirectURL)
 
 	if err != nil {
