@@ -48,6 +48,8 @@ type MessageFile struct {
 	Name     string `json:"name"`
 	FileType string `json:"file_type"`
 	Size     int    `json:"size"`
+	Width    int    `json:"width,omitempty"`
+	Height   int    `json:"height,omitempty"`
 }
 
 // MessageButton
