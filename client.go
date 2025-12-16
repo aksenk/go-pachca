@@ -21,6 +21,7 @@ const (
 	chatsURL      = "/chats"
 	threadsURL    = "/threads"
 	tagsURL       = "/group_tags"
+	uploadsURL    = "/uploads"
 )
 
 var (
@@ -41,6 +42,7 @@ type Client struct {
 	Chats     *Chats
 	Tags      *Tags
 	Reactions *Reactions
+	Files     *Files
 }
 
 type PaginationOptions struct {
@@ -172,6 +174,7 @@ func NewClient(options *ClientOptions) (*Client, error) {
 		Chats:     &Chats{client: pachcaClient},
 		Tags:      &Tags{client: pachcaClient},
 		Reactions: &Reactions{client: pachcaClient},
+		Files:     &Files{client: pachcaClient},
 	}, nil
 }
 
