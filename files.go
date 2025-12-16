@@ -15,6 +15,8 @@ type Files struct {
 	client *resty.Client
 }
 
+// uploadParams
+// Структура параметров для загрузки файла
 type uploadParams struct {
 	ContentDisposition string `json:"Content-Disposition"`
 	ACL                string `json:"acl"`
@@ -27,7 +29,7 @@ type uploadParams struct {
 	DirectURL          string `json:"direct_url"`
 }
 
-// GetUploadParams
+// getUploadParams
 // Метод для получения параметров загрузки файла в pachca
 func (f *Files) getUploadParams(ctx context.Context) (*uploadParams, *resty.Response, error) {
 	url := uploadsURL
@@ -50,6 +52,9 @@ func (f *Files) getUploadParams(ctx context.Context) (*uploadParams, *resty.Resp
 	return &r, resp, nil
 }
 
+// UploadFile
+// Метод для загрузки файла в pachca
+// Возвращает key загруженного файла, ответ сервера и ошибку
 func (f *Files) UploadFile(ctx context.Context, fileName string, fileContent []byte) (string, *resty.Response, error) {
 	params, resp, err := f.getUploadParams(ctx)
 	if err != nil {
@@ -76,6 +81,7 @@ func (f *Files) UploadFile(ctx context.Context, fileName string, fileContent []b
 	if err != nil {
 		return "", uploadResp, err
 	}
+	// Ответ 204 при успешной загрузке файла
 	if uploadResp.StatusCode() != 204 {
 		return "", uploadResp, fmt.Errorf("%w: %d", ErrResponseCode, uploadResp.StatusCode())
 	}
