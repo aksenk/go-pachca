@@ -21,7 +21,7 @@ const (
 	chatsURL      = "/chats"
 	threadsURL    = "/threads"
 	tagsURL       = "/group_tags"
-	uploadsURL  = "/uploads"
+	uploadsURL    = "/uploads"
 )
 
 var (
