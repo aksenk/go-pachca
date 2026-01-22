@@ -1,12 +1,13 @@
 package pachca
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/go-resty/resty/v2"
-	"bytes"
 	"strings"
+
+	"github.com/go-resty/resty/v2"
 )
 
 // Files

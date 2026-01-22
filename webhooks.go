@@ -24,8 +24,12 @@ type WebhookMessage struct {
 }
 
 type WebhookButton struct {
-	Type      string `json:"type"`
-	MessageID int    `json:"message_id"`
-	Data      string `json:"data"`
-	UserID    int    `json:"user_id"`
+	Type             string `json:"type"`
+	Event            string `json:"event"`
+	MessageID        int    `json:"message_id"`
+	TriggerID        string `json:"trigger_id"`
+	Data             string `json:"data"`
+	UserID           int    `json:"user_id"`
+	ChatID           int    `json:"chat_id"`
+	WebhookTimestamp int    `json:"webhook_timestamp"`
 }
