@@ -43,6 +43,7 @@ type Client struct {
 	Tags      *Tags
 	Reactions *Reactions
 	Files     *Files
+	Views     *Views
 }
 
 type PaginationOptions struct {
