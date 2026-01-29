@@ -17,10 +17,12 @@ type WebhookMessage struct {
 	ParentMessageID *int      `json:"parent_message_id"`
 	EntityType      string    `json:"entity_type"`
 	EntityID        int       `json:"entity_id"`
+	URL             string    `json:"url"`
 	Thread          *struct {
 		MessageID     int `json:"message_id"`
 		MessageChatID int `json:"message_chat_id"`
 	} `json:"thread"`
+	WebhookTimestamp int `json:"webhook_timestamp"`
 }
 
 type WebhookButton struct {
