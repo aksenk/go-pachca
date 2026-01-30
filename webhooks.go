@@ -1,6 +1,9 @@
 package pachca
 
-import "time"
+import (
+	"encoding/json"
+	"time"
+)
 
 type WebhookType struct {
 	Type string `json:"type"`
@@ -37,11 +40,11 @@ type WebhookButton struct {
 }
 
 type WebhookView struct {
-	Type             string `json:"type"`
-	Event            string `json:"event"`
-	PrivateMetadata  string `json:"private_metadata"`
-	CallbackID       string `json:"callback_id"`
-	UserID           int    `json:"user_id"`
-	Data             any    `json:"data"`
-	WebhookTimestamp int    `json:"webhook_timestamp"`
+	Type             string          `json:"type"`
+	Event            string          `json:"event"`
+	PrivateMetadata  string          `json:"private_metadata"`
+	CallbackID       string          `json:"callback_id"`
+	UserID           int             `json:"user_id"`
+	Data             json.RawMessage `json:"data"`
+	WebhookTimestamp int             `json:"webhook_timestamp"`
 }
