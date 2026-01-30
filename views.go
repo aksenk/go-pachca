@@ -86,7 +86,7 @@ type ViewOption struct {
 	Selected bool `json:"selected,omitempty"` // select
 }
 
-func (v *Views) Open(ctx context.Context, req ViewRequest) error {
+func (v *Views) Open(ctx context.Context, req *ViewRequest) error {
 	if v == nil || v.client == nil {
 		return errors.New("views client is not initialized")
 	}
