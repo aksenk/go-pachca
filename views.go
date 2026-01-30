@@ -99,16 +99,10 @@ func (v *Views) Open(ctx context.Context, req *ViewRequest) (*resty.Response, er
 		req.Type = ViewTypeModal
 	}
 
-	var resp struct {
-		OK    bool   `json:"ok"`
-		Error string `json:"error,omitempty"`
-	}
-
 	r, err := v.client.
 		R().
 		SetContext(ctx).
 		SetBody(req).
-		SetResult(&resp).
 		Post("/views/open")
 	if err != nil {
 		return r, fmt.Errorf("views.open request failed: %w", err)
@@ -120,10 +114,6 @@ func (v *Views) Open(ctx context.Context, req *ViewRequest) (*resty.Response, er
 			r.StatusCode(),
 			string(r.Body()),
 		)
-	}
-
-	if !resp.OK {
-		return r, fmt.Errorf("views.open api error: %s", resp.Error)
 	}
 
 	return r, nil
