@@ -35,3 +35,13 @@ type WebhookButton struct {
 	ChatID           int    `json:"chat_id"`
 	WebhookTimestamp int    `json:"webhook_timestamp"`
 }
+
+type WebhookView struct {
+	Type             string `json:"type"`
+	Event            string `json:"event"`
+	PrivateMetadata  string `json:"private_metadata"`
+	CallbackID       string `json:"callback_id"`
+	UserID           int    `json:"user_id"`
+	Data             any    `json:"data"`
+	WebhookTimestamp int    `json:"webhook_timestamp"`
+}
