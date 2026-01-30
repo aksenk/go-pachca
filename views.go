@@ -86,13 +86,13 @@ type ViewOption struct {
 	Selected bool `json:"selected,omitempty"` // select
 }
 
-func (v *Views) Open(ctx context.Context, req *ViewRequest) error {
+func (v *Views) Open(ctx context.Context, req *ViewRequest) (*resty.Response, error) {
 	if v == nil || v.client == nil {
-		return errors.New("views client is not initialized")
+		return nil, errors.New("views client is not initialized")
 	}
 
 	if req.TriggerID == "" {
-		return errors.New("trigger_id is required")
+		return nil, errors.New("trigger_id is required")
 	}
 
 	if req.Type == "" {
@@ -111,11 +111,11 @@ func (v *Views) Open(ctx context.Context, req *ViewRequest) error {
 		SetResult(&resp).
 		Post("/views/open")
 	if err != nil {
-		return fmt.Errorf("views.open request failed: %w", err)
+		return r, fmt.Errorf("views.open request failed: %w", err)
 	}
 
 	if r.IsError() {
-		return fmt.Errorf(
+		return r, fmt.Errorf(
 			"views.open http error: status=%d body=%s",
 			r.StatusCode(),
 			string(r.Body()),
@@ -123,8 +123,8 @@ func (v *Views) Open(ctx context.Context, req *ViewRequest) error {
 	}
 
 	if !resp.OK {
-		return fmt.Errorf("views.open api error: %s", resp.Error)
+		return r, fmt.Errorf("views.open api error: %s", resp.Error)
 	}
 
-	return nil
+	return r, nil
 }
