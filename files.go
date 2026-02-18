@@ -40,7 +40,7 @@ func (f *Files) getUploadParams(ctx context.Context) (*uploadParams, *resty.Resp
 	if err != nil {
 		return nil, resp, err
 	}
-	if resp.StatusCode() != 200 {
+	if resp.StatusCode() != 201 {
 		return nil, resp, fmt.Errorf("%w: %d", ErrResponseCode, resp.StatusCode())
 	}
 
