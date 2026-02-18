@@ -59,7 +59,7 @@ func (f *Files) getUploadParams(ctx context.Context) (*uploadParams, *resty.Resp
 func (f *Files) UploadFile(ctx context.Context, fileName string, fileContent []byte) (string, *resty.Response, error) {
 	params, resp, err := f.getUploadParams(ctx)
 	if err != nil {
-		return "", resp, err
+		return "", resp, fmt.Errorf("failed to get upload params: %w", err)
 	}
 
 	reader := bytes.NewReader(fileContent)
@@ -80,7 +80,7 @@ func (f *Files) UploadFile(ctx context.Context, fileName string, fileContent []b
 		Post(params.DirectURL)
 
 	if err != nil {
-		return "", uploadResp, err
+		return "", uploadResp, fmt.Errorf("failed to upload file: %w", err)
 	}
 	// Ответ 204 при успешной загрузке файла
 	if uploadResp.StatusCode() != 204 {
