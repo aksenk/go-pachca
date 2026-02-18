@@ -40,7 +40,7 @@ func (f *Files) getUploadParams(ctx context.Context) (*uploadParams, *resty.Resp
 	if err != nil {
 		return nil, resp, err
 	}
-	if resp.StatusCode() != 200 {
+	if resp.StatusCode() != 201 {
 		return nil, resp, fmt.Errorf("%w: %d", ErrResponseCode, resp.StatusCode())
 	}
 
@@ -83,7 +83,7 @@ func (f *Files) UploadFile(ctx context.Context, fileName string, fileContent []b
 		return "", uploadResp, err
 	}
 	// Ответ 204 при успешной загрузке файла
-	if uploadResp.StatusCode() != 204 && uploadResp.StatusCode() != 201 {
+	if uploadResp.StatusCode() != 204 {
 		return "", uploadResp, fmt.Errorf("%w: %d", ErrResponseCode, uploadResp.StatusCode())
 	}
 
