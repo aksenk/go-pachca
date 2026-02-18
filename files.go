@@ -83,7 +83,7 @@ func (f *Files) UploadFile(ctx context.Context, fileName string, fileContent []b
 		return "", uploadResp, err
 	}
 	// Ответ 204 при успешной загрузке файла
-	if uploadResp.StatusCode() != 204 {
+	if uploadResp.StatusCode() != 204 && uploadResp.StatusCode() != 201 {
 		return "", uploadResp, fmt.Errorf("%w: %d", ErrResponseCode, uploadResp.StatusCode())
 	}
 
