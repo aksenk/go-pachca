@@ -280,9 +280,9 @@ func (m *Messages) Pin(ctx context.Context, messageID int) (*resty.Response, err
 		return resp, err
 	}
 
-	// 201 при успешном пине сообщения
+	// 204 при успешном пине сообщения
 	// 409 если сообщение уже было запинено
-	if resp.StatusCode() != 201 && resp.StatusCode() != 409 {
+	if resp.StatusCode() != 204 && resp.StatusCode() != 409 {
 		return resp, fmt.Errorf("%w: %v", ErrResponseCode, resp.StatusCode())
 	}
 
