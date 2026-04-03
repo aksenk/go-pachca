@@ -26,8 +26,8 @@ type Message struct {
 	EntityType         string            `json:"entity_type,omitempty"`
 	EntityID           int               `json:"entity_id"`
 	Content            string            `json:"content"`
-	Files              []MessageFile     `json:"files,omitempty"`
-	Buttons            [][]MessageButton `json:"buttons,omitempty"`
+	Files              []MessageFile     `json:"files"`
+	Buttons            [][]MessageButton `json:"buttons"`
 	ParentMessageID    *int              `json:"parent_message_id,omitempty"`
 	DisplayAvatarURL   string            `json:"display_avatar_url"`
 	DisplayName        string            `json:"display_name,omitempty"`
