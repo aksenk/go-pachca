@@ -39,22 +39,18 @@ type ReactionResponseRaw struct {
 	Data []ReactionResponse `json:"data"`
 }
 
-func (r *Reactions) Add(ctx context.Context, messageID int, reaction string) (*resty.Response, error) {
+func (r *Reactions) Add(ctx context.Context, messageID int, code string) (*resty.Response, error) {
 	if messageID <= 0 {
 		return nil, fmt.Errorf("%w: incorrect message ID %d", ErrInvalidInput, messageID)
 	}
-	if reaction == "" {
+	if code == "" {
 		return nil, fmt.Errorf("%w: reaction code cannot be empty", ErrInvalidInput)
 	}
 
 	url := fmt.Sprintf("%v/%v/reactions", messagesURL, messageID)
 
-	var msg ReactionOutgoing
-	// Если реакция начинается и заканчивается двоеточиями, то это кастомная реакция, иначе - стандартная.
-	if len(reaction) > 1 && reaction[0] == ':' && reaction[len(reaction)-1] == ':' {
-		msg = ReactionOutgoing{Name: reaction}
-	} else {
-		msg = ReactionOutgoing{Code: reaction}
+	msg := ReactionOutgoing{
+		Code: code,
 	}
 	resp, err := r.client.R().
 		SetContext(ctx).
@@ -71,22 +67,83 @@ func (r *Reactions) Add(ctx context.Context, messageID int, reaction string) (*r
 	return resp, err
 }
 
-func (r *Reactions) Del(ctx context.Context, messageID int, reaction string) (*resty.Response, error) {
+func (r *Reactions) AddCustom(ctx context.Context, messageID int, code, name string) (*resty.Response, error) {
 	if messageID <= 0 {
 		return nil, fmt.Errorf("%w: incorrect message ID %d", ErrInvalidInput, messageID)
 	}
-	if reaction == "" {
+	if code == "" {
+		return nil, fmt.Errorf("%w: reaction code cannot be empty", ErrInvalidInput)
+	}
+	if name == "" {
+		return nil, fmt.Errorf("%w: reaction name cannot be empty", ErrInvalidInput)
+	}
+
+	url := fmt.Sprintf("%v/%v/reactions", messagesURL, messageID)
+
+	msg := ReactionOutgoing{
+		Code: code,
+		Name: name,
+	}
+	resp, err := r.client.R().
+		SetContext(ctx).
+		SetBody(msg).
+		Post(url)
+	if err != nil {
+		return resp, err
+	}
+
+	if resp.StatusCode() != 201 {
+		return resp, fmt.Errorf("%w: %d", ErrResponseCode, resp.StatusCode())
+	}
+
+	return resp, err
+}
+
+func (r *Reactions) Del(ctx context.Context, messageID int, code string) (*resty.Response, error) {
+	if messageID <= 0 {
+		return nil, fmt.Errorf("%w: incorrect message ID %d", ErrInvalidInput, messageID)
+	}
+	if code == "" {
 		return nil, fmt.Errorf("%w: reaction code cannot be empty", ErrInvalidInput)
 	}
 
 	url := fmt.Sprintf("%v/%v/reactions", messagesURL, messageID)
 
-	var msg ReactionOutgoing
-	// Если реакция начинается и заканчивается двоеточиями, то это кастомная реакция, иначе - стандартная.
-	if len(reaction) > 1 && reaction[0] == ':' && reaction[len(reaction)-1] == ':' {
-		msg = ReactionOutgoing{Name: reaction}
-	} else {
-		msg = ReactionOutgoing{Code: reaction}
+	msg := ReactionOutgoing{
+		Code: code,
+	}
+
+	resp, err := r.client.R().
+		SetContext(ctx).
+		SetBody(msg).
+		Delete(url)
+	if err != nil {
+		return resp, err
+	}
+
+	if resp.StatusCode() != 204 {
+		return resp, fmt.Errorf("%w: %d", ErrResponseCode, resp.StatusCode())
+	}
+
+	return resp, err
+}
+
+func (r *Reactions) DelCustom(ctx context.Context, messageID int, code, name string) (*resty.Response, error) {
+	if messageID <= 0 {
+		return nil, fmt.Errorf("%w: incorrect message ID %d", ErrInvalidInput, messageID)
+	}
+	if code == "" {
+		return nil, fmt.Errorf("%w: reaction code cannot be empty", ErrInvalidInput)
+	}
+	if name == "" {
+		return nil, fmt.Errorf("%w: reaction name cannot be empty", ErrInvalidInput)
+	}
+
+	url := fmt.Sprintf("%v/%v/reactions", messagesURL, messageID)
+
+	msg := ReactionOutgoing{
+		Code: code,
+		Name: name,
 	}
 
 	resp, err := r.client.R().
