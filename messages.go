@@ -24,8 +24,8 @@ type ChatMessagesOptions struct {
 // Объект для сообщения pachca
 type Message struct {
 	EntityType         string            `json:"entity_type,omitempty"`
-	EntityID           int               `json:"entity_id,omitempty"`
-	Content            string            `json:"content,omitempty"`
+	EntityID           int               `json:"entity_id"`
+	Content            string            `json:"content"`
 	Files              []MessageFile     `json:"files,omitempty"`
 	Buttons            [][]MessageButton `json:"buttons,omitempty"`
 	ParentMessageID    *int              `json:"parent_message_id,omitempty"`
