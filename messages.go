@@ -217,7 +217,7 @@ func (m *Messages) ListChatMessagesAll(ctx context.Context, chatID int) ([]Messa
 			return nil, err
 		}
 		all = append(all, messages...)
-		if next == "" {
+		if len(messages) == 0 {
 			break
 		}
 		cursor = next
