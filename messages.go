@@ -153,8 +153,8 @@ func (m *Messages) Get(ctx context.Context, messageID int) (*MessageResponse, *r
 	return &raw.Data, resp, nil
 }
 
-// GetChatMessages возвращает список сообщений чата с пагинацией по курсору
-func (m *Messages) GetChatMessages(ctx context.Context, opts *ChatMessagesOptions) ([]MessageResponse, string, *resty.Response, error) {
+// ListChatMessages возвращает список сообщений чата с пагинацией по курсору
+func (m *Messages) ListChatMessages(ctx context.Context, opts *ChatMessagesOptions) ([]MessageResponse, string, *resty.Response, error) {
 	if opts == nil {
 		return nil, "", nil, fmt.Errorf("%w: options is nil", ErrInvalidInput)
 	}
@@ -196,8 +196,8 @@ func (m *Messages) GetChatMessages(ctx context.Context, opts *ChatMessagesOption
 	return raw.Data, raw.Meta.Paginate.NextPage, resp, nil
 }
 
-// GetChatMessagesAll автоматически обходит все страницы и возвращает все сообщения чата
-func (m *Messages) GetChatMessagesAll(ctx context.Context, chatID int) ([]MessageResponse, error) {
+// ListChatMessagesAll автоматически обходит все страницы и возвращает все сообщения чата
+func (m *Messages) ListChatMessagesAll(ctx context.Context, chatID int) ([]MessageResponse, error) {
 	if chatID <= 0 {
 		return nil, fmt.Errorf("%w: incorrect chat ID %d", ErrInvalidInput, chatID)
 	}
@@ -212,7 +212,7 @@ func (m *Messages) GetChatMessagesAll(ctx context.Context, chatID int) ([]Messag
 				Cursor: cursor,
 			},
 		}
-		messages, next, _, err := m.GetChatMessages(ctx, opts)
+		messages, next, _, err := m.ListChatMessages(ctx, opts)
 		if err != nil {
 			return nil, err
 		}
