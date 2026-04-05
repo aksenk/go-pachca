@@ -197,13 +197,11 @@ func (m *Messages) GetChatMessages(ctx context.Context, opts *ChatMessagesOption
 }
 
 // GetChatMessagesAll автоматически обходит все страницы и возвращает все сообщения чата
-func (m *Messages) GetChatMessagesAll(ctx context.Context, chatID int, limit int) ([]MessageResponse, error) {
+func (m *Messages) GetChatMessagesAll(ctx context.Context, chatID int) ([]MessageResponse, error) {
 	if chatID <= 0 {
 		return nil, fmt.Errorf("%w: incorrect chat ID %d", ErrInvalidInput, chatID)
 	}
-	if limit <= 0 {
-		limit = 50
-	}
+	limit := 50
 	var all []MessageResponse
 	cursor := ""
 	for {
