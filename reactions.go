@@ -24,31 +24,37 @@ type Reactions struct {
 }
 
 type ReactionOutgoing struct {
-	Code string `json:"code"`
+	Code string `json:"code,omitempty"`
+	Name string `json:"name,omitempty"`
 }
 
 type ReactionResponse struct {
 	UserID    int       `json:"user_id"`
 	CreatedAt time.Time `json:"created_at"`
 	Code      string    `json:"code"`
+	Name      string    `json:"name"`
 }
 
 type ReactionResponseRaw struct {
 	Data []ReactionResponse `json:"data"`
 }
 
-func (r *Reactions) Add(ctx context.Context, messageID int, reactionCode string) (*resty.Response, error) {
+func (r *Reactions) Add(ctx context.Context, messageID int, code string) (*resty.Response, error) {
 	if messageID <= 0 {
 		return nil, fmt.Errorf("%w: incorrect message ID %d", ErrInvalidInput, messageID)
 	}
-	if reactionCode == "" {
+	if code == "" {
 		return nil, fmt.Errorf("%w: reaction code cannot be empty", ErrInvalidInput)
 	}
 
 	url := fmt.Sprintf("%v/%v/reactions", messagesURL, messageID)
+
+	msg := ReactionOutgoing{
+		Code: code,
+	}
 	resp, err := r.client.R().
 		SetContext(ctx).
-		SetBody(ReactionOutgoing{Code: reactionCode}).
+		SetBody(msg).
 		Post(url)
 	if err != nil {
 		return resp, err
@@ -61,18 +67,88 @@ func (r *Reactions) Add(ctx context.Context, messageID int, reactionCode string)
 	return resp, err
 }
 
-func (r *Reactions) Del(ctx context.Context, messageID int, reactionCode string) (*resty.Response, error) {
+func (r *Reactions) AddCustom(ctx context.Context, messageID int, code, name string) (*resty.Response, error) {
 	if messageID <= 0 {
 		return nil, fmt.Errorf("%w: incorrect message ID %d", ErrInvalidInput, messageID)
 	}
-	if reactionCode == "" {
+	if code == "" {
+		return nil, fmt.Errorf("%w: reaction code cannot be empty", ErrInvalidInput)
+	}
+	if name == "" {
+		return nil, fmt.Errorf("%w: reaction name cannot be empty", ErrInvalidInput)
+	}
+
+	url := fmt.Sprintf("%v/%v/reactions", messagesURL, messageID)
+
+	msg := ReactionOutgoing{
+		Code: code,
+		Name: name,
+	}
+	resp, err := r.client.R().
+		SetContext(ctx).
+		SetBody(msg).
+		Post(url)
+	if err != nil {
+		return resp, err
+	}
+
+	if resp.StatusCode() != 201 {
+		return resp, fmt.Errorf("%w: %d", ErrResponseCode, resp.StatusCode())
+	}
+
+	return resp, err
+}
+
+func (r *Reactions) Del(ctx context.Context, messageID int, code string) (*resty.Response, error) {
+	if messageID <= 0 {
+		return nil, fmt.Errorf("%w: incorrect message ID %d", ErrInvalidInput, messageID)
+	}
+	if code == "" {
 		return nil, fmt.Errorf("%w: reaction code cannot be empty", ErrInvalidInput)
 	}
 
 	url := fmt.Sprintf("%v/%v/reactions", messagesURL, messageID)
+
+	msg := ReactionOutgoing{
+		Code: code,
+	}
+
 	resp, err := r.client.R().
 		SetContext(ctx).
-		SetBody(ReactionOutgoing{Code: reactionCode}).
+		SetBody(msg).
+		Delete(url)
+	if err != nil {
+		return resp, err
+	}
+
+	if resp.StatusCode() != 204 {
+		return resp, fmt.Errorf("%w: %d", ErrResponseCode, resp.StatusCode())
+	}
+
+	return resp, err
+}
+
+func (r *Reactions) DelCustom(ctx context.Context, messageID int, code, name string) (*resty.Response, error) {
+	if messageID <= 0 {
+		return nil, fmt.Errorf("%w: incorrect message ID %d", ErrInvalidInput, messageID)
+	}
+	if code == "" {
+		return nil, fmt.Errorf("%w: reaction code cannot be empty", ErrInvalidInput)
+	}
+	if name == "" {
+		return nil, fmt.Errorf("%w: reaction name cannot be empty", ErrInvalidInput)
+	}
+
+	url := fmt.Sprintf("%v/%v/reactions", messagesURL, messageID)
+
+	msg := ReactionOutgoing{
+		Code: code,
+		Name: name,
+	}
+
+	resp, err := r.client.R().
+		SetContext(ctx).
+		SetBody(msg).
 		Delete(url)
 	if err != nil {
 		return resp, err
