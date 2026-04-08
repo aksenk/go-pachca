@@ -31,8 +31,8 @@ type Message struct {
 	EntityType         string            `json:"entity_type,omitempty"`          // "discussion", "thread", "user"
 	EntityID           int               `json:"entity_id"`                      // ID чата/треда/пользователя
 	Content            string            `json:"content"`                        // текст сообщения
-	Files              []MessageFile     `json:"files,omitempty"`                // вложения
-	Buttons            [][]MessageButton `json:"buttons,omitempty"`              // кнопки
+	Files              []MessageFile     `json:"files"`                          // вложения
+	Buttons            [][]MessageButton `json:"buttons"`                        // кнопки
 	ParentMessageID    *int              `json:"parent_message_id,omitempty"`    // ответ на сообщение
 	DisplayAvatarURL   string            `json:"display_avatar_url,omitempty"`   // кастомная аватарка (только для ботов)
 	DisplayName        string            `json:"display_name,omitempty"`         // кастомное имя (только для ботов)
