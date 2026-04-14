@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"time"
 
 	"github.com/go-resty/resty/v2"
 )
@@ -14,31 +15,50 @@ type Users struct {
 	client *resty.Client
 }
 
-type UserCustomProperty struct {
+// User модель сотрудника / профиля
+type User struct {
+	ID               int              `json:"id"`
+	FirstName        string           `json:"first_name"`
+	LastName         string           `json:"last_name"`
+	Nickname         string           `json:"nickname"`
+	Email            string           `json:"email"`
+	PhoneNumber      string           `json:"phone_number"`
+	Department       string           `json:"department"`
+	Title            string           `json:"title"`
+	Role             string           `json:"role"` // admin, user, multi_guest, guest
+	Suspended        bool             `json:"suspended"`
+	InviteStatus     string           `json:"invite_status"` // confirmed, sent
+	ListTags         []string         `json:"list_tags"`
+	CustomProperties []CustomProperty `json:"custom_properties"`
+	UserStatus       *UserStatus      `json:"user_status"` // может быть null
+	Bot              bool             `json:"bot"`
+	Sso              bool             `json:"sso"`
+	CreatedAt        time.Time        `json:"created_at"`
+	LastActivityAt   time.Time        `json:"last_activity_at"`
+	TimeZone         string           `json:"time_zone"`
+	ImageURL         *string          `json:"image_url"` // ссылка на аватарку
+}
+
+// CustomProperty дополнительное поле сотрудника
+type CustomProperty struct {
 	ID       int    `json:"id"`
 	Name     string `json:"name"`
-	DataType string `json:"data_type"`
+	DataType string `json:"data_type"` // string, number, date, link
 	Value    string `json:"value"`
 }
 
+// UserStatus статус пользователя
 type UserStatus struct {
-	Emoji     string `json:"emoji"`
-	Title     string `json:"title"`
-	ExpiresAt string `json:"expires_at"`
+	Emoji       string                 `json:"emoji"`
+	Title       string                 `json:"title"`
+	ExpiresAt   *time.Time             `json:"expires_at"`
+	IsAway      bool                   `json:"is_away"`
+	AwayMessage *UserStatusAwayMessage `json:"away_message"`
 }
 
-type User struct {
-	FirstName        string               `json:"first_name,omitempty"`
-	LastName         string               `json:"last_name,omitempty"`
-	Nickname         string               `json:"nickname,omitempty"`
-	Email            string               `json:"email,omitempty"`
-	PhoneNumber      string               `json:"phone_number,omitempty"`
-	Department       string               `json:"department,omitempty"`
-	Title            string               `json:"title,omitempty"`
-	Role             string               `json:"role,omitempty"`
-	Suspended        bool                 `json:"suspended,omitempty"`
-	ListTags         []string             `json:"list_tags"`
-	CustomProperties []UserCustomProperty `json:"custom_properties,omitempty"`
+// UserStatusAwayMessage сообщение при режиме «Нет на месте»
+type UserStatusAwayMessage struct {
+	Text string `json:"text"`
 }
 
 type UserResponse struct {
