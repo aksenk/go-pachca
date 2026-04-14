@@ -44,6 +44,7 @@ type Client struct {
 	Reactions *Reactions
 	Files     *Files
 	Views     *Views
+	Profile   *Profile
 }
 
 type PaginationOptions struct {
@@ -177,6 +178,7 @@ func NewClient(options *ClientOptions) (*Client, error) {
 		Reactions: &Reactions{client: pachcaClient},
 		Files:     &Files{client: pachcaClient},
 		Views:     &Views{client: pachcaClient},
+		Profile:   &Profile{client: pachcaClient},
 	}, nil
 }
 
