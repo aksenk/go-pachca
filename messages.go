@@ -9,19 +9,13 @@ import (
 	"github.com/go-resty/resty/v2"
 )
 
-// ---------- Пагинация ----------
-
-type CursorPagination struct {
-	Limit  int    `json:"limit,omitempty"`  // количество записей (1–50, по умолчанию 50)
-	Cursor string `json:"cursor,omitempty"` // курсор следующей страницы из meta.paginate.next_page
-}
-
 // ChatMessagesOptions параметры для получения сообщений чата
 type ChatMessagesOptions struct {
 	ChatID int
-	CursorPagination
-	SortField string // "id" или "created_at" (опционально)
-	SortOrder string // "asc" или "desc" (по умолчанию "desc")
+	Limit  int
+	Cursor string
+	Sort   string
+	Order  string
 }
 
 // ---------- Модели данных ----------
@@ -171,10 +165,11 @@ func (m *Messages) ListChatMessages(ctx context.Context, opts *ChatMessagesOptio
 	if opts.Cursor != "" {
 		query["cursor"] = opts.Cursor
 	}
-	if opts.SortField != "" {
-		query["sort["+opts.SortField+"]"] = opts.SortOrder // если order не задан, API использует desc
-	} else if opts.SortOrder != "" {
-		query["sort[id]"] = opts.SortOrder
+	if opts.Sort != "" {
+		query["sort"] = opts.Sort
+	}
+	if opts.Order != "" {
+		query["order"] = opts.Order
 	}
 
 	resp, err := m.client.R().
@@ -207,10 +202,10 @@ func (m *Messages) ListChatMessagesAll(ctx context.Context, chatID int) ([]Messa
 	for {
 		opts := &ChatMessagesOptions{
 			ChatID: chatID,
-			CursorPagination: CursorPagination{
-				Limit:  limit,
-				Cursor: cursor,
-			},
+			Limit:  limit,
+			Cursor: cursor,
+			Sort:   "id",
+			Order:  "desc",
 		}
 		messages, next, _, err := m.ListChatMessages(ctx, opts)
 		if err != nil {
