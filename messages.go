@@ -20,8 +20,8 @@ type CursorPagination struct {
 type ChatMessagesOptions struct {
 	ChatID int
 	CursorPagination
-	SortField string // "id" или "created_at" (опционально)
-	SortOrder string // "asc" или "desc" (по умолчанию "desc")
+	Sort  string
+	Order string
 }
 
 // ---------- Модели данных ----------
@@ -171,10 +171,11 @@ func (m *Messages) ListChatMessages(ctx context.Context, opts *ChatMessagesOptio
 	if opts.Cursor != "" {
 		query["cursor"] = opts.Cursor
 	}
-	if opts.SortField != "" {
-		query["sort["+opts.SortField+"]"] = opts.SortOrder // если order не задан, API использует desc
-	} else if opts.SortOrder != "" {
-		query["sort[id]"] = opts.SortOrder
+	if opts.Sort != "" {
+		query["sort"] = opts.Sort
+	}
+	if opts.Order != "" {
+		query["order"] = opts.Order
 	}
 
 	resp, err := m.client.R().
