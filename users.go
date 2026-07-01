@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"sync"
 	"time"
 
 	"github.com/go-resty/resty/v2"
@@ -13,6 +14,8 @@ import (
 // Объект для работы с пользователями
 type Users struct {
 	client *resty.Client
+	cache  map[int]*UserResponse
+	mu     *sync.RWMutex
 }
 
 // User модель сотрудника / профиля
@@ -106,6 +109,29 @@ func (u *Users) Get(ctx context.Context, userID int) (*UserResponse, *resty.Resp
 	}
 
 	return &r.Data, resp, nil
+}
+
+// GetWithCache
+// Метод для получения информации о сотруднике используя кэш. Если пользователя нету в кэше, то будет выполнен запрос к API.
+func (u *Users) GetWithCache(ctx context.Context, userID int) (*UserResponse, *resty.Response, error) {
+	u.mu.RLock()
+	cachedUser, found := u.cache[userID]
+	u.mu.RUnlock()
+
+	if found {
+		return cachedUser, nil, nil
+	}
+
+	user, resp, err := u.Get(ctx, userID)
+	if err != nil {
+		return nil, resp, err
+	}
+
+	u.mu.Lock()
+	u.cache[userID] = user
+	u.mu.Unlock()
+
+	return user, resp, nil
 }
 
 // getUsersPaginated
