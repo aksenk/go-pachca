@@ -8,6 +8,7 @@ import (
 	"io"
 	"net"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/go-resty/resty/v2"
@@ -169,10 +170,14 @@ func NewClient(options *ClientOptions) (*Client, error) {
 				}
 			})
 	return &Client{
-		client:    pachcaClient,
-		Messages:  &Messages{client: pachcaClient},
-		Threads:   &Threads{client: pachcaClient},
-		Users:     &Users{client: pachcaClient},
+		client:   pachcaClient,
+		Messages: &Messages{client: pachcaClient},
+		Threads:  &Threads{client: pachcaClient},
+		Users: &Users{
+			client: pachcaClient,
+			cache:  make(map[int]*UserResponse),
+			mu:     &sync.RWMutex{},
+		},
 		Chats:     &Chats{client: pachcaClient},
 		Tags:      &Tags{client: pachcaClient},
 		Reactions: &Reactions{client: pachcaClient},
