@@ -175,9 +175,9 @@ func (u *Users) getUsersPaginatedV2(ctx context.Context, options *ListUsersOptio
 	resp, err := u.client.R().
 		SetContext(ctx).
 		SetQueryParams(map[string]string{
-			"limit": fmt.Sprint(options.PaginationOptions.Limit),
-			"cursor":  options.PaginationOptions.Next,
-			"query": options.Query,
+			"limit":  fmt.Sprint(options.PaginationOptions.Limit),
+			"cursor": options.PaginationOptions.Next,
+			"query":  options.Query,
 		}).
 		Get(usersURL)
 	if err != nil {
@@ -244,16 +244,41 @@ func (u *Users) List(ctx context.Context, options *ListUsersOptions) (users []Us
 	return users, resp, nil
 }
 
+// ListV2 Метод для получения актуального списка сотрудников вашей компании.
+func (u *Users) ListV2(ctx context.Context, options *ListUsersOptionsV2) (users []UserResponse, next string, resp *resty.Response, err error) {
+	if options == nil {
+		options = &ListUsersOptionsV2{
+			PaginationOptions: PaginationOptionsUsers{
+				Limit: 50,
+			},
+		}
+	}
+
+	usersResponse, next, resp, err := u.getUsersPaginatedV2(ctx, options)
+	if err != nil {
+		return nil, "", resp, err
+	}
+
+	if len(usersResponse) == 0 {
+		return usersResponse, "", resp, nil
+	}
+
+	return usersResponse, next, resp, nil
+}
+
 // Find
 // Метод для поиска пользователей. Упрощенная версия метода List. Позволяет передать фильтрующий запрос и получить результаты.
 // Поисковая фраза для фильтрации результатов (поиск идет по полям first_name (имя), last_name (фамилия), email (электронная почта), phone_number (телефон) и nickname (никнейм))
+// resp - в случае успеха - последний успешний ответ
 func (u *Users) Find(ctx context.Context, query string) (users []UserResponse, resp *resty.Response, err error) {
 	options := &ListUsersOptionsV2{
 		PaginationOptions: PaginationOptionsUsers{
-			Limit:  50,
+			Limit: 50,
 		},
 		Query: query,
 	}
+
+	var rawResp *resty.Response
 
 	for {
 		usersResponse, next, resp, err := u.getUsersPaginatedV2(ctx, options)
@@ -261,15 +286,24 @@ func (u *Users) Find(ctx context.Context, query string) (users []UserResponse, r
 			return nil, resp, err
 		}
 
+		rawResp = resp
+
 		if len(usersResponse) == 0 {
 			break
 		}
 
 		users = append(users, usersResponse...)
 
+		// Сейчас API возврашает next даже на пустой странице.
+		// Это условие для защиты на случай изменеия API, если на последней странице возвращается пустой next
+		if next == "" {
+			break
+		}
+
 		options.PaginationOptions.Next = next
 	}
-	return users, resp, nil
+
+	return users, rawResp, nil
 }
 
 // Update
