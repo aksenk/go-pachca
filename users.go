@@ -80,8 +80,17 @@ type UserResponseRaw struct {
 	Data UserResponse `json:"data"`
 }
 
+type PaginateUsersRaw struct {
+	NextPage string `json:"next_page"`
+}
+
+type MetaRaw struct {
+	Paginate PaginateUsersRaw `json:"paginate"`
+}
+
 type UsersResponseRaw struct {
 	Data []UserResponse `json:"data"`
+	Meta MetaRaw        `json:"meta"`
 }
 
 // Get
@@ -134,7 +143,7 @@ func (u *Users) GetWithCache(ctx context.Context, userID int) (*UserResponse, *r
 	return user, resp, nil
 }
 
-// getUsersPaginated
+// getUsersPaginated Deprecated per page не работает. Актуальный метод getUsersPaginatedV2
 // Получение списка пользователей с пагинацией.
 func (u *Users) getUsersPaginated(ctx context.Context, options *ListUsersOptions) ([]UserResponse, *resty.Response, error) {
 	resp, err := u.client.R().
@@ -162,12 +171,43 @@ func (u *Users) getUsersPaginated(ctx context.Context, options *ListUsersOptions
 	return users.Data, resp, nil
 }
 
+func (u *Users) getUsersPaginatedV2(ctx context.Context, options *ListUsersOptionsV2) ([]UserResponse, string, *resty.Response, error) {
+	resp, err := u.client.R().
+		SetContext(ctx).
+		SetQueryParams(map[string]string{
+			"limit":  fmt.Sprint(options.PaginationOptions.Limit),
+			"cursor": options.PaginationOptions.Next,
+			"query":  options.Query,
+		}).
+		Get(usersURL)
+	if err != nil {
+		return nil, "", resp, err
+	}
+
+	if resp.StatusCode() != 200 {
+		return nil, "", resp, fmt.Errorf("%w: %d", ErrResponseCode, resp.StatusCode())
+	}
+
+	var users *UsersResponseRaw
+	err = json.Unmarshal(resp.Body(), &users)
+	if err != nil {
+		return nil, "", resp, fmt.Errorf("%w: %w", ErrResponseDecode, err)
+	}
+
+	return users.Data, users.Meta.Paginate.NextPage, resp, nil
+}
+
 type ListUsersOptions struct {
 	Query string
 	PaginationOptions
 }
 
-// List
+type ListUsersOptionsV2 struct {
+	Query             string
+	PaginationOptions PaginationOptionsUsers
+}
+
+// List Deprecated Пагинация per page не работает
 // Метод для получения актуального списка сотрудников вашей компании.
 // Все параметры передаются через опции. В случае отсутствия опций будут возвращены все сотрудники.
 func (u *Users) List(ctx context.Context, options *ListUsersOptions) (users []UserResponse, resp *resty.Response, err error) {
@@ -204,23 +244,49 @@ func (u *Users) List(ctx context.Context, options *ListUsersOptions) (users []Us
 	return users, resp, nil
 }
 
+// ListV2 Метод для получения актуального списка сотрудников вашей компании.
+func (u *Users) ListV2(ctx context.Context, options *ListUsersOptionsV2) (users []UserResponse, next string, resp *resty.Response, err error) {
+	if options == nil {
+		options = &ListUsersOptionsV2{
+			PaginationOptions: PaginationOptionsUsers{
+				Limit: 50,
+			},
+		}
+	}
+
+	usersResponse, next, resp, err := u.getUsersPaginatedV2(ctx, options)
+	if err != nil {
+		return nil, "", resp, err
+	}
+
+	if len(usersResponse) == 0 {
+		return usersResponse, "", resp, nil
+	}
+
+	return usersResponse, next, resp, nil
+}
+
 // Find
 // Метод для поиска пользователей. Упрощенная версия метода List. Позволяет передать фильтрующий запрос и получить результаты.
 // Поисковая фраза для фильтрации результатов (поиск идет по полям first_name (имя), last_name (фамилия), email (электронная почта), phone_number (телефон) и nickname (никнейм))
+// resp - в случае успеха - последний успешний ответ
 func (u *Users) Find(ctx context.Context, query string) (users []UserResponse, resp *resty.Response, err error) {
-	options := &ListUsersOptions{
-		PaginationOptions: PaginationOptions{
-			Per:  50,
-			Page: 1,
+	options := &ListUsersOptionsV2{
+		PaginationOptions: PaginationOptionsUsers{
+			Limit: 50,
 		},
 		Query: query,
 	}
 
+	var rawResp *resty.Response
+
 	for {
-		usersResponse, resp, err := u.getUsersPaginated(ctx, options)
+		usersResponse, next, resp, err := u.getUsersPaginatedV2(ctx, options)
 		if err != nil {
 			return nil, resp, err
 		}
+
+		rawResp = resp
 
 		if len(usersResponse) == 0 {
 			break
@@ -228,13 +294,16 @@ func (u *Users) Find(ctx context.Context, query string) (users []UserResponse, r
 
 		users = append(users, usersResponse...)
 
-		if len(usersResponse) < options.Per {
+		// Сейчас API возврашает next даже на пустой странице.
+		// Это условие для защиты на случай изменеия API, если на последней странице возвращается пустой next
+		if next == "" {
 			break
 		}
 
-		options.Page++
+		options.PaginationOptions.Next = next
 	}
-	return users, resp, nil
+
+	return users, rawResp, nil
 }
 
 // Update
