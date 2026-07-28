@@ -54,8 +54,8 @@ type PaginationOptions struct {
 }
 
 type PaginationOptionsUsers struct {
-	Limit  int
-	Next string
+	Limit int
+	Next  string
 }
 
 type RetryObserver func(meta RetryMeta)
