@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"sync"
 	"time"
 
 	"github.com/go-resty/resty/v2"
@@ -13,6 +14,8 @@ import (
 // Объект для работы с чатами
 type Chats struct {
 	client *resty.Client
+	cache  map[int]*ChatResponse
+	mu     *sync.RWMutex
 }
 
 // Chat
@@ -74,6 +77,31 @@ func (c *Chats) Get(ctx context.Context, chatID int) (*ChatResponse, *resty.Resp
 	}
 
 	return &r.Data, resp, nil
+}
+
+func (c *Chats) GetWithCache(ctx context.Context, chatID int) (*ChatResponse, *resty.Response, error) {
+	if chatID <= 0 {
+		return nil, nil, fmt.Errorf("%w: incorrect chat ID %d", ErrInvalidInput, chatID)
+	}
+
+	c.mu.RLock()
+	chat, exists := c.cache[chatID]
+	c.mu.RUnlock()
+
+	if exists {
+		return chat, nil, nil
+	}
+
+	chat, resp, err := c.Get(ctx, chatID)
+	if err != nil {
+		return nil, resp, err
+	}
+
+	c.mu.Lock()
+	c.cache[chatID] = chat
+	c.mu.Unlock()
+
+	return chat, resp, nil
 }
 
 // New
