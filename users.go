@@ -40,6 +40,7 @@ type User struct {
 	LastActivityAt   time.Time        `json:"last_activity_at"`
 	TimeZone         string           `json:"time_zone"`
 	ImageURL         *string          `json:"image_url"` // ссылка на аватарку
+	IsServiceUser    *bool
 }
 
 // CustomProperty дополнительное поле сотрудника
@@ -99,7 +100,25 @@ func (u *Users) Get(ctx context.Context, userID int) (*UserResponse, *resty.Resp
 	if userID <= 0 {
 		return nil, nil, fmt.Errorf("invalid user ID: %d", userID)
 	}
-
+	
+	/*
+		userID = 1 - это видеочат
+		Но при попытке получить пользователя - ошибка 404
+		Возможно это временное поведение со стороны pacha
+	*/
+	if userID == 1 {
+		truevla := true
+		return &UserResponse{
+			ID: userID,
+			User: User{
+				ID:              userID,
+				FirstName:       "Видеочат",
+				LastName:        "",
+				IsServiceUser: 	 &truevla,
+			},
+		}, nil, nil
+	}
+	
 	url := fmt.Sprintf("%v/%v", usersURL, userID)
 	resp, err := u.client.R().
 		SetContext(ctx).
