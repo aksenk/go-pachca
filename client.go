@@ -183,7 +183,11 @@ func NewClient(options *ClientOptions) (*Client, error) {
 			cache:  make(map[int]*UserResponse),
 			mu:     &sync.RWMutex{},
 		},
-		Chats:     &Chats{client: pachcaClient},
+		Chats: &Chats{
+			client: pachcaClient,
+			cache:  make(map[int]*ChatResponse),
+			mu:     &sync.RWMutex{},
+		},
 		Tags:      &Tags{client: pachcaClient},
 		Reactions: &Reactions{client: pachcaClient},
 		Files:     &Files{client: pachcaClient},
