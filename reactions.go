@@ -10,13 +10,15 @@ import (
 )
 
 type WebhookReaction struct {
-	Type      string    `json:"type"`
-	Event     string    `json:"event"`
-	MessageID int       `json:"message_id"`
-	Code      string    `json:"code"`
-	UserID    int       `json:"user_id"`
-	CreatedAt time.Time `json:"created_at"`
-	Name      string    `json:"name"`
+	Type             string    `json:"type"`
+	Event            string    `json:"event"`
+	ChatID           *int      `json:"chat_id"`
+	MessageID        int       `json:"message_id"`
+	Code             string    `json:"code"`
+	UserID           int       `json:"user_id"`
+	CreatedAt        time.Time `json:"created_at"`
+	Name             string    `json:"name"`
+	WebhookTimestamp int       `json:"webhook_timestamp"`
 }
 
 type Reactions struct {
